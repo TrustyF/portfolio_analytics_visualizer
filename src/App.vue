@@ -9,6 +9,15 @@ function parse_date(date) {
   return `${date.slice(6, 8)}/${date.slice(4, 6)}/${date.slice(0, 4)}`
 }
 
+function parse_seconds(time) {
+  let min = Math.floor(time / 60);
+  let sec = time % 60;
+
+  if (min > 10) return '+10'
+
+  return String(min) + ':' + String(sec).padStart(2, '0');
+}
+
 function event_to_icon(event) {
 
   let event_name = event['event_name']
@@ -23,7 +32,7 @@ function event_to_icon(event) {
     'page_leave': 'bi-door-open',
   }
 
-  if (event['event_info'].split(' ').includes('outside,')) return 'bi-arrow-down'
+  if (event['event_info'].split(' ').includes('outside,')) return 'bi-house-door'
 
   return convert_table[event_name]
 }
@@ -58,14 +67,18 @@ function event_to_color(event) {
       <div class="user_wrapper" v-for="(values,user) in entry['users']" :key="user">
         <country-component :country="values['geo']"/>
         <div class="event_wrapper" v-for="(event) in values['events']" :key="event['timestamp']"
-             >
+        >
 
-          <p :class="`${event_to_icon(event)} event_icon`" :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
+          <p :class="`${event_to_icon(event)} event_icon`"
+             :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
 
-          <p class="event_title">{{ event['event_name']==='router_nav' ? event['event_info'].split(',')[1] : event['event_info']}}</p>
+          <p class="event_title">
+            {{ event['event_name'] === 'router_nav' ? event['event_info'].split(',')[1] : event['event_info'] }}</p>
 
-          <div class="bi-clock-history time_sep" v-if="event['diff']>0">
-            <h4 class="time_title">{{ Math.round(event['diff']) }}</h4>
+          <div :class="`time_sep ${event['diff']>60 && event['event_info']==='id: 998917047' ? 'completed':''}`"
+               v-if="event['diff']>5">
+            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
           </div>
 
         </div>
@@ -118,30 +131,34 @@ function event_to_color(event) {
   /*display: flex;*/
   /*flex-flow: row nowrap;*/
   display: grid;
-  grid-template-columns: 1fr 6fr 1fr;
+  grid-template-columns: 1fr 5fr 1fr;
+  align-items: center;
+
   gap: 10px;
   width: 100%;
+  height: 30px;
 }
 
 .event_wrapper p {
-  font-size: 0.9em;
+  font-size: 0.8em;
   line-height: normal;
 
-  white-space: nowrap;
-  overflow: hidden;
-  /*text-overflow: ellipsis;*/
-  /*overflow-x: scroll;*/
+  /*white-space: nowrap;*/
+  /*overflow: hidden;*/
 }
 
 .event_title {
-  /*outline: 1px solid red;*/
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-start;
-  align-items: center;
   text-align: left;
   line-height: 1;
   font-size: 1.5em;
+
+  margin-top: auto;
+  margin-bottom: auto;
+
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
   gap: 10px;
 }
@@ -150,9 +167,10 @@ function event_to_color(event) {
   display: flex;
   flex-flow: column;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 25%;
   aspect-ratio: 1;
   color: white;
+  height: 100%;
 }
 
 .time_sep {
@@ -160,12 +178,22 @@ function event_to_color(event) {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  height: fit-content;
+  background-color: #383838;
+  padding: 5px;
+}
+
+.completed {
+  background-color: hsla(160, 100%, 50%, 0.25)
 }
 
 .time_title {
   font-size: 0.7em;
   line-height: 0.7em;
   margin-left: 3px;
+  white-space: nowrap;
   /*outline: 1px solid orange;*/
 }
 </style>
