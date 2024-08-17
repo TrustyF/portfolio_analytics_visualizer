@@ -5,7 +5,7 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 
-key_path = "vue-portfolio-7361b-487cfbc9268b.json"
+key_path = "creds/vue-portfolio-7361b-487cfbc9268b.json"
 credentials = service_account.Credentials.from_service_account_file(
     key_path, scopes=["https://www.googleapis.com/auth/cloud-platform"])
 client = bigquery.Client(credentials=credentials, project=credentials.project_id, )
@@ -19,17 +19,17 @@ QUERY = (
     "LIMIT 1000"
 )
 
-# # API request
-# query_job = client.query(QUERY)
+# API request
+query_job = client.query(QUERY)
+
+# convert
+records = [dict(row) for row in query_job]
 #
-# # convert
-# records = [dict(row) for row in query_job]
-#
-# with open('dump.json', 'w') as outfile:
+# with open('dumps/dump.json', 'w') as outfile:
 #     json.dump(records, outfile, indent=1)
 
-with open('dump.json', 'r') as infile:
-    records = json.load(infile)
+# with open('dumps/dump.json', 'r') as infile:
+#     records = json.load(infile)
 
 new_data = []
 for event in records:
@@ -77,5 +77,5 @@ for date, events in groupby(new_data, key=lambda x: x['date']):
 
 sorted_data.sort(key=lambda x: x['date'],reverse=True)
 
-with open('parsed_dump.json', 'w') as outfile:
+with open('dumps/parsed_dump.json', 'w') as outfile:
     json.dump(sorted_data, outfile, indent=1)

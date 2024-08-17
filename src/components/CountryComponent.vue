@@ -10,11 +10,11 @@ let props = defineProps({
 
 async function getCountryCode(name) {
 
-  if (!name || !name.length > 0 || name === '/') return name
+  if (!name || !name.length > 0 || name === '/') return null
 
   return fetch(`https://restcountries.com/v3.1/name/${name.split('/')[0]}`).then(resp => resp.json())
-      .then(json => json[0]['flag'])
-      .catch(error => name)
+      .then(json => json[0]['flags']['svg'])
+      .catch(error => null)
 }
 
 let icon = ref('')
@@ -29,24 +29,31 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="country_wrapper">
-    <h4>{{ icon }}</h4>
+  <div class="country_wrapper" v-if="icon">
+    <img :src="icon" alt="country" class="flag">
     <h3 style="white-space: nowrap;">{{ country.split('/')[1] }}</h3>
   </div>
 </template>
 
 <style scoped>
 .country_wrapper {
+  /*color: white;*/
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row;
+  width: 100%;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  overflow: hidden;
-  font-size: 1em;
-}
+  justify-content: flex-start;
 
-.country_wrapper h4 {
-  font-size: 2em;
+  gap: 10px;
+  padding: 10px;
+  background-color: #383838;
+  border-radius: 10px;
+}
+.country_wrapper h3 {
+  font-weight: 900;
+  font-size: 0.9em;
+}
+.flag {
+  height: 15px;
 }
 </style>
