@@ -60,7 +60,7 @@ function event_to_color(event) {
 }
 
 function format_date(date) {
-  return String(new Date(date).toLocaleTimeString('en-US', {timeZone: 'GMT'}));
+  return new Date(date + 'Z').toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});;
 }
 
 let events = ref()
@@ -69,15 +69,18 @@ async function fetch_events() {
   const url = `${curr_api}/event/get`
   const params = {}
 
-  const result = await axios.get(url, {params: params})
+  events.value = await axios.get(url, {params: params,timeout:2000})
       .then(response => response.data)
-
-  console.log(result)
-  events.value = result
 }
 
 function sortedTimestamp(x) {
   return x.sort((a, b) => new Date(a['timestamp']) - new Date(b['timestamp']))
+}
+
+function sortedUser(x){
+  let out = Object.values(x)
+  // console.log(JSON.parse(JSON.stringify(out)))
+  return out.sort((a, b) => new Date(b['events'][0]['timestamp']) - new Date(a['events'][0]['timestamp']))
 }
 
 onMounted(() => {
@@ -93,8 +96,8 @@ onMounted(() => {
 
       <div v-for="(source_events,source) in entry['source']" :key="source" class="date_wrapper">
         <h4 style="position: absolute;top: -30px;left: 5px">{{ source }}</h4>
-        <div class="user_wrapper" v-for="(values,user) in source_events['users']" :key="values">
-          <header-component :value="`${format_date(values['events'][0]['timestamp'])} - ${user}`"/>
+        <div class="user_wrapper" v-for="values in sortedUser(source_events['users'])" :key="values">
+          <header-component :value="`${format_date(values['events'][0]['timestamp'])}`"/>
           <div class="event_wrapper" v-for="(event) in sortedTimestamp(values['events'])" :key="event['timestamp']">
 
             <p :class="`${event_to_icon(event)} event_icon`"
@@ -130,9 +133,9 @@ onMounted(() => {
   position: relative;
   /*outline: 1px solid orange;*/
   display: flex;
-  flex-flow: row-reverse wrap;
+  flex-flow: row wrap;
   align-items: flex-start;
-  justify-content: flex-end;
+  /*justify-content: flex-end;*/
 
   margin-top: 30px;
   gap: 20px;
@@ -165,7 +168,7 @@ onMounted(() => {
   max-height: 500px;
   overflow: scroll;
   align-content: flex-start;
-  width: 270px;
+  width: 260px;
 }
 
 .event_wrapper {
