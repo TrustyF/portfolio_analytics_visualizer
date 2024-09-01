@@ -1,13 +1,12 @@
 <script setup>
-import index from '/data_parser/dumps/parsed_dump.json'
 import CountryComponent from "@/components/CountryComponent.vue";
-import {computed, onBeforeUnmount, onMounted} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref} from "vue";
+import DeviceComponent from "@/components/DeviceComponent.vue";
+import axios from "axios"
+import HeaderComponent from "@/components/HeaderComponent.vue";
 
-let sorted_stamps = computed(() => index)
-
-function parse_date(date) {
-  return `${date.slice(6, 8)}/${date.slice(4, 6)}/${date.slice(0, 4)}`
-}
+let dev = false
+let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 function parse_seconds(time) {
   let min = Math.floor(time / 60);
@@ -23,11 +22,12 @@ function event_to_icon(event) {
   let event_name = event['event_name']
 
   let convert_table = {
-    'router_nav': 'bi-arrow-right',
-    'iframe_use': 'bi-play-btn',
+    'page_nav': 'bi-arrow-right',
+    'vimeo_play': 'bi-play-fill',
+    'vimeo_pause': 'bi-pause-fill',
     'filter_use': 'bi-funnel',
-    'nav_return_arrow': 'bi-arrow-90deg-left',
-    'nav_up_arrow': 'bi-arrow-90deg-up',
+    'return_arrow': 'bi-arrow-90deg-left',
+    'up_arrow': 'bi-arrow-90deg-up',
     'open_new_tab': 'bi-arrow-up-right-square',
     'page_leave': 'bi-door-open',
   }
@@ -45,11 +45,12 @@ function event_to_color(event) {
   let bright = '50%';
 
   let convert_table = {
-    'router_nav': `hsla(160, ${sat}, ${bright},${opacity})`,
-    'iframe_use': `hsla(50,${sat},${bright},${opacity})`,
+    'page_nav': `hsla(160, ${sat}, ${bright},${opacity})`,
+    'vimeo_play': `hsla(50,${sat},${bright},${opacity})`,
+    'vimeo_pause': `hsla(35,${sat},${bright},${opacity})`,
     'filter_use': `hsla(312,${sat},${bright},${opacity})`,
-    'nav_return_arrow': `hsla(118,${sat},${bright},${opacity})`,
-    'nav_up_arrow': `hsla(118,${sat},${bright},${opacity})`,
+    'return_arrow': `hsla(118,${sat},${bright},${opacity})`,
+    'up_arrow': `hsla(118,${sat},${bright},${opacity})`,
     'open_new_tab': `hsla(182,${sat},${bright},${opacity})`,
     'page_leave': `hsla(0,${sat},${bright},${opacity})`,
   }
@@ -58,31 +59,59 @@ function event_to_color(event) {
 
 }
 
+function format_date(date) {
+  return String(new Date(date).toLocaleTimeString('en-US', {timeZone: 'GMT'}));
+}
+
+let events = ref()
+
+async function fetch_events() {
+  const url = `${curr_api}/event/get`
+  const params = {}
+
+  const result = await axios.get(url, {params: params})
+      .then(response => response.data)
+
+  console.log(result)
+  events.value = result
+}
+
+function sortedTimestamp(x) {
+  return x.sort((a, b) => new Date(a['timestamp']) - new Date(b['timestamp']))
+}
+
+onMounted(() => {
+  fetch_events()
+})
+
 </script>
 
 <template>
   <div class="wrapper">
-    <div class="date_wrapper" v-for="entry in sorted_stamps" :key="entry['date']">
-      <h4 style="position: absolute;top: -30px">{{ parse_date(entry['date']) }}</h4>
-      <div class="user_wrapper" v-for="(values,user) in entry['users']" :key="user">
-        <country-component :country="values['geo']"/>
-        <div class="event_wrapper" v-for="(event) in values['events']" :key="event['timestamp']"
-        >
+    <div class="source_wrapper" v-for="entry in events" :key="entry['date']">
+      <h4 style="position: absolute;top: -30px">{{ entry['date'] }}</h4>
 
-          <p :class="`${event_to_icon(event)} event_icon`"
-             :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
+      <div v-for="(source_events,source) in entry['source']" :key="source" class="date_wrapper">
+        <h4 style="position: absolute;top: -30px;left: 5px">{{ source }}</h4>
+        <div class="user_wrapper" v-for="(values,user) in source_events['users']" :key="values">
+          <header-component :value="`${format_date(values['events'][0]['timestamp'])} - ${user}`"/>
+          <div class="event_wrapper" v-for="(event) in sortedTimestamp(values['events'])" :key="event['timestamp']">
 
-          <p class="event_title">
-            {{ event['event_name'] === 'router_nav' ? event['event_info'].split(',')[1] : event['event_info'] }}</p>
+            <p :class="`${event_to_icon(event)} event_icon`"
+               :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
 
-          <div :class="`time_sep ${event['diff']>60 && event['event_info']==='id: 998917047' ? 'completed':''}`"
-               v-if="event['diff']>5">
-            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            <p class="event_title">{{ event['event_info'] !== 'null' ? event['event_info'] : event['event_name'] }}</p>
+
+            <div :class="`time_sep ${event['diff']>60 && event['event_info']==='id: 998917047' ? 'completed':''}`"
+                 v-if="event['diff']>5">
+              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            </div>
+
           </div>
-
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -100,17 +129,32 @@ function event_to_color(event) {
 .date_wrapper {
   position: relative;
   /*outline: 1px solid orange;*/
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-flow: row-reverse wrap;
   align-items: flex-start;
+  justify-content: flex-end;
 
+  margin-top: 30px;
   gap: 20px;
   border: 1px solid #282828;
   padding: 30px;
   border-radius: 10px;
 }
 
+.source_wrapper {
+  position: relative;
+  /*outline: 1px solid orange;*/
+  display: flex;
+  flex-flow: column;
+
+  gap: 10px;
+  border: 1px solid #282828;
+  padding: 10px;
+  border-radius: 10px;
+}
+
 .user_wrapper {
+  position: relative;
   display: flex;
   flex-flow: row wrap;
   gap: 10px;
@@ -121,6 +165,7 @@ function event_to_color(event) {
   max-height: 500px;
   overflow: scroll;
   align-content: flex-start;
+  width: 270px;
 }
 
 .event_wrapper {

@@ -11,7 +11,8 @@ credentials = service_account.Credentials.from_service_account_file(
 client = bigquery.Client(credentials=credentials, project=credentials.project_id, )
 
 QUERY = (
-    "SELECT event_name,event_date,geo,event_params,user_id,user_properties,user_pseudo_id,event_params,event_timestamp"
+    "SELECT event_name,event_date,geo,event_params,user_id,user_properties,user_pseudo_id,event_params,event_timestamp,"
+    "device"
     " FROM `vue-portfolio-7361b.analytics_452242460.events_*` "
     "WHERE event_date >= '20240813' "
     "AND event_name in ('router_nav','iframe_use','filter_use','nav_return_arrow','nav_up_arrow',"
@@ -37,6 +38,7 @@ for event in records:
         'name': event['event_name'],
         'id': event['user_pseudo_id'],
         'geo': f"{event['geo']['country']}/{event['geo']['city']}",
+        'device': f"{event['device']['category']}/{event['device']['mobile_brand_name']}/{event['device']['mobile_model_name']}",
         'date': event['event_date'],
         'timestamp': event['event_timestamp'],
         'value': [x['value']['string_value'] for x in event['event_params'] if x['key'] == 'info'][0],
@@ -57,6 +59,7 @@ for date, events in groupby(new_data, key=lambda x: x['date']):
         sorted_data[entry_index]['users'][user_id] = {}
         sorted_data[entry_index]['users'][user_id]['events'] = []
         sorted_data[entry_index]['users'][user_id]['geo'] = all_val[0]['geo']
+        sorted_data[entry_index]['users'][user_id]['device'] = all_val[0]['device']
 
         for i, x in enumerate(all_val):
             temp = {
