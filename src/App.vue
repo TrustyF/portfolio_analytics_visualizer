@@ -5,7 +5,7 @@ import DeviceComponent from "@/components/DeviceComponent.vue";
 import axios from "axios"
 import HeaderComponent from "@/components/HeaderComponent.vue";
 
-let dev = false
+let dev = import.meta.env.DEV
 let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 function parse_seconds(time) {
@@ -60,7 +60,7 @@ function event_to_color(event) {
 }
 
 function format_date(date) {
-  return new Date(date + 'Z').toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});;
+  return new Date(date + 'Z').toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 }
 
 let events = ref()
@@ -71,6 +71,7 @@ async function fetch_events() {
 
   events.value = await axios.get(url, {params: params,timeout:2000})
       .then(response => response.data)
+  console.log(JSON.parse(JSON.stringify(events.value)))
 }
 
 function sortedTimestamp(x) {
@@ -91,13 +92,13 @@ onMounted(() => {
 
 <template>
   <div class="wrapper">
-    <div class="source_wrapper" v-for="entry in events" :key="entry['date']">
+    <div :class="`source_wrapper`" v-for="entry in events" :key="entry['date']">
       <h4 style="position: absolute;top: -30px">{{ entry['date'] }}</h4>
 
       <div v-for="(source_events,source) in entry['source']" :key="source" class="date_wrapper">
         <h4 style="position: absolute;top: -30px;left: 5px">{{ source }}</h4>
         <div class="user_wrapper" v-for="values in sortedUser(source_events['users'])" :key="values">
-          <header-component :value="`${format_date(values['events'][0]['timestamp'])}`"/>
+          <country-component :data="entry['geo']" :time="format_date(values['events'][0]['timestamp'])"/>
           <div class="event_wrapper" v-for="(event) in sortedTimestamp(values['events'])" :key="event['timestamp']">
 
             <p :class="`${event_to_icon(event)} event_icon`"
@@ -154,6 +155,9 @@ onMounted(() => {
   border: 1px solid #282828;
   padding: 10px;
   border-radius: 10px;
+}
+.outdated {
+  color: #383838;
 }
 
 .user_wrapper {
