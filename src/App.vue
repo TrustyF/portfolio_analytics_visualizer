@@ -19,7 +19,7 @@ function parse_seconds(time) {
 
 function event_to_icon(event) {
 
-  let event_name = event['event_name']
+  let event_name = event['name']
 
   let convert_table = {
     'page_nav': 'bi-arrow-right',
@@ -32,13 +32,13 @@ function event_to_icon(event) {
     'page_leave': 'bi-door-open',
   }
 
-  if (event['event_info'].split(' ').includes('outside,')) return 'bi-house-door'
+  if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
 
   return convert_table[event_name]
 }
 
 function event_to_color(event) {
-  let event_name = event['event_name']
+  let event_name = event['name']
 
   let opacity = 0.25;
   let sat = '100%';
@@ -74,16 +74,6 @@ async function fetch_events() {
   console.log(JSON.parse(JSON.stringify(events.value)))
 }
 
-function sortedTimestamp(x) {
-  return x.sort((a, b) => new Date(a['timestamp']) - new Date(b['timestamp']))
-}
-
-function sortedUser(x){
-  let out = Object.values(x)
-  // console.log(JSON.parse(JSON.stringify(out)))
-  return out.sort((a, b) => new Date(b['events'][0]['timestamp']) - new Date(a['events'][0]['timestamp']))
-}
-
 onMounted(() => {
   fetch_events()
 })
@@ -92,21 +82,19 @@ onMounted(() => {
 
 <template>
   <div class="wrapper">
-    <div :class="`source_wrapper`" v-for="entry in events" :key="entry['date']">
-      <h4 style="position: absolute;top: -30px">{{ entry['date'] }}</h4>
+    <div :class="`date_wrapper `" v-for="(users,date) in events" :key="date">
+      <h4 style="position: absolute;top: -30px">{{ date }}</h4>
 
-      <div v-for="(source_events,source) in entry['source']" :key="source" class="date_wrapper">
-        <h4 style="position: absolute;top: -30px;left: 5px">{{ source }}</h4>
-        <div class="user_wrapper" v-for="values in sortedUser(source_events['users'])" :key="values">
-          <country-component :data="entry['geo']" :time="format_date(values['events'][0]['timestamp'])"/>
-          <div class="event_wrapper" v-for="(event) in sortedTimestamp(values['events'])" :key="event['timestamp']">
+        <div class="user_wrapper" v-for="(data,user) in users" :key="user">
+          <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+          <div class="event_wrapper" v-for="(event) in data['events']" :key="event['timestamp']">
 
             <p :class="`${event_to_icon(event)} event_icon`"
                :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
 
-            <p class="event_title">{{ event['event_info'] !== 'null' ? event['event_info'] : event['event_name'] }}</p>
+            <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
 
-            <div :class="`time_sep ${event['diff']>60 && event['event_info']==='id: 998917047' ? 'completed':''}`"
+            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
                  v-if="event['diff']>5">
               <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
               <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
@@ -114,7 +102,7 @@ onMounted(() => {
 
           </div>
         </div>
-      </div>
+
 
     </div>
   </div>
@@ -132,7 +120,6 @@ onMounted(() => {
 
 .date_wrapper {
   position: relative;
-  /*outline: 1px solid orange;*/
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
@@ -141,7 +128,7 @@ onMounted(() => {
   margin-top: 30px;
   gap: 20px;
   border: 1px solid #282828;
-  padding: 30px;
+  padding: 10px;
   border-radius: 10px;
 }
 
@@ -155,9 +142,6 @@ onMounted(() => {
   border: 1px solid #282828;
   padding: 10px;
   border-radius: 10px;
-}
-.outdated {
-  color: #383838;
 }
 
 .user_wrapper {
