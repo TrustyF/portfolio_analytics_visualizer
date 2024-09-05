@@ -20,11 +20,22 @@ function source_icon(src) {
   return mapping[src]
 }
 
+function getFlagEmoji(countryCode) {
+  const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
+}
+
+
 </script>
 
 <template>
   <div class="country_wrapper">
-    <h3 class="overline">{{ `${data['geo']['country_emoji']} ${data['geo']['state_prov']}` }}</h3>
+<!--    <img :src="data['geo']['country_flag']" alt="bg_flag" class="bg_flag">-->
+
+    <h3 class="overline">{{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}</h3>
     <h4 class="underline">{{
         `${time} - ${data['geo']['zipcode']} - ${data['source']}`
       }}</h4>
@@ -58,11 +69,21 @@ function source_icon(src) {
 .overline {
   white-space: nowrap;
   color: white;
+  opacity: 0.8;
 }
 
 .underline {
   white-space: nowrap;
   font-size: 0.7em;
+}
+.bg_flag {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  /*opacity: 0.05;*/
+  filter: opacity(0.1);
 }
 
 .country_wrapper h3 {

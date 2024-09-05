@@ -5,7 +5,8 @@ import DeviceComponent from "@/components/DeviceComponent.vue";
 import axios from "axios"
 import HeaderComponent from "@/components/HeaderComponent.vue";
 
-let dev = import.meta.env.DEV
+// let dev = import.meta.env.DEV
+let dev = false
 let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 function parse_seconds(time) {
@@ -69,9 +70,14 @@ async function fetch_events() {
   const url = `${curr_api}/event/get`
   const params = {}
 
-  events.value = await axios.get(url, {params: params,timeout:2000})
+  events.value = await axios.get(url, {params: params, timeout: 2000})
       .then(response => response.data)
   console.log(JSON.parse(JSON.stringify(events.value)))
+}
+
+function sortDates(arr) {
+  let objects = Object.values(arr)
+  return objects.sort((a, b) => new Date(b['events'][0]['timestamp']) - new Date(a['events'][0]['timestamp']))
 }
 
 onMounted(() => {
@@ -85,23 +91,23 @@ onMounted(() => {
     <div :class="`date_wrapper `" v-for="(users,date) in events" :key="date">
       <h4 style="position: absolute;top: -30px">{{ date }}</h4>
 
-        <div class="user_wrapper" v-for="(data,user) in users" :key="user">
-          <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
-          <div class="event_wrapper" v-for="(event) in data['events']" :key="event['timestamp']">
+      <div class="user_wrapper" v-for="(data,user) in sortDates(users)" :key="user">
+        <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+        <div class="event_wrapper" v-for="(event) in data['events']" :key="event['timestamp']">
 
-            <p :class="`${event_to_icon(event)} event_icon`"
-               :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
+          <p :class="`${event_to_icon(event)} event_icon`"
+             :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
 
-            <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
+          <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
 
-            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-                 v-if="event['diff']>5">
-              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
-            </div>
-
+          <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+               v-if="event['diff']>5">
+            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
           </div>
+
         </div>
+      </div>
 
 
     </div>
