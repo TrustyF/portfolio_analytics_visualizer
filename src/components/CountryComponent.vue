@@ -1,5 +1,7 @@
 <script setup>
 import {inject, onMounted, watch, ref, computed} from "vue";
+import portfolio from '@/assets/portfolio.ico'
+import trusty_corner from '@/assets/trusty_corner.ico'
 
 let props = defineProps({
   data: {
@@ -14,8 +16,16 @@ let props = defineProps({
 
 function source_icon(src) {
   let mapping = {
-    'portfolio': 'bi-file-earmark-person-fill',
-    'trusty_corner': 'bi-film',
+    'portfolio': portfolio,
+    'trusty_corner': trusty_corner,
+  }
+  return mapping[src]
+}
+
+function source_color(src) {
+  let mapping = {
+    'portfolio': 'green',
+    'trusty_corner': 'purple',
   }
   return mapping[src]
 }
@@ -32,14 +42,13 @@ function getFlagEmoji(countryCode) {
 </script>
 
 <template>
-  <div class="country_wrapper">
-<!--    <img :src="data['geo']['country_flag']" alt="bg_flag" class="bg_flag">-->
+  <div :class="`country_wrapper ${source_color(data['source'])}`">
 
     <h3 class="overline">{{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}</h3>
     <h4 class="underline">{{
         `${time} - ${data['geo']['zipcode']} - ${data['source']}`
       }}</h4>
-    <h2 :class="`${source_icon(data['source'])} source`" style="font-size: 1em"></h2>
+<!--    <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">-->
   </div>
 </template>
 
@@ -59,11 +68,20 @@ function getFlagEmoji(countryCode) {
   border-radius: 10px;
   overflow: hidden;
 }
+.green {
+  background-color: #174d3b;
+}
+.purple {
+  background-color: #251633;
+}
 .source {
   position: absolute;
   right: 0;
   top: 0;
-  padding: 5px;
+  margin: 5px;
+  width: 20px;
+  object-fit: cover;
+  opacity: 0.7;
   /*background-color: #282828;*/
 }
 .overline {
