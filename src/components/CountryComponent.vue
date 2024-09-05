@@ -69,10 +69,10 @@ function getFlagEmoji(countryCode) {
   overflow: hidden;
 }
 .green {
-  background-color: #174d3b;
+  background-color: #06402d;
 }
 .purple {
-  background-color: #251633;
+  background-color: #2a1240;
 }
 .source {
   position: absolute;
