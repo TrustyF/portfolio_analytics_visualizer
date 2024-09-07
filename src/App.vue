@@ -31,6 +31,7 @@ function event_to_icon(event) {
     'up_arrow': 'bi-arrow-90deg-up',
     'open_new_tab': 'bi-arrow-up-right-square',
     'page_leave': 'bi-door-open',
+    'open_movie': 'bi-box-arrow-up-right',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -54,6 +55,7 @@ function event_to_color(event) {
     'up_arrow': `hsla(118,${sat},${bright},${opacity})`,
     'open_new_tab': `hsla(182,${sat},${bright},${opacity})`,
     'page_leave': `hsla(0,${sat},${bright},${opacity})`,
+    'open_movie': `hsla(20,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
@@ -104,23 +106,25 @@ onMounted(() => {
     <div :class="`date_wrapper `" v-for="(users,date) in sortDates(events)" :key="date">
       <h4 style="position: absolute;top: -30px">{{ date }}</h4>
 
-            <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user">
-              <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
-              <div class="event_wrapper" v-for="(event) in data['events']" :key="event['timestamp']">
+      <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user">
+        <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+        <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
+              padding-bottom:${event['diff']>20 ? event['diff']*2 : 0}px`"
+             v-for="(event) in data['events']" :key="event['timestamp']">
 
-                <p :class="`${event_to_icon(event)} event_icon`"
-                   :style="`font-size: 1em;background-color:${event_to_color(event)}`"/>
+          <p :class="`${event_to_icon(event)} event_icon`"
+             :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
 
-                <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
+          <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
 
-                <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-                     v-if="event['diff']>5">
-                  <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-                  <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
-                </div>
+          <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+               v-if="event['diff']>5">
+            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+          </div>
 
-              </div>
-            </div>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -170,7 +174,7 @@ onMounted(() => {
   background-color: #282828;
   /*width: 250px;*/
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 20px;
   max-height: 500px;
   overflow: scroll;
   align-content: flex-start;
@@ -181,7 +185,7 @@ onMounted(() => {
   position: relative;
   /*padding: 10px;*/
   text-align: center;
-  border-radius: 5px;
+  border-radius: 15px;
   /*display: flex;*/
   /*flex-flow: row nowrap;*/
   display: grid;
@@ -205,6 +209,7 @@ onMounted(() => {
   text-align: left;
   line-height: 1;
   font-size: 1.5em;
+  color: #d5d5d5;
 
   margin-top: auto;
   margin-bottom: auto;
@@ -221,7 +226,7 @@ onMounted(() => {
   display: flex;
   flex-flow: column;
   justify-content: center;
-  border-radius: 25%;
+  border-radius: 15px;
   aspect-ratio: 1;
   color: white;
   height: 100%;
@@ -235,7 +240,7 @@ onMounted(() => {
   gap: 5px;
   border-radius: 20px;
   height: fit-content;
-  background-color: #383838;
+  /*background-color: #383838;*/
   padding: 5px;
 }
 
