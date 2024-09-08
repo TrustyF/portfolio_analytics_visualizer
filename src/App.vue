@@ -33,7 +33,7 @@ function event_to_icon(event) {
     'up_arrow': 'bi-arrow-90deg-up',
     'open_new_tab': 'bi-arrow-up-right-square',
     'page_leave': 'bi-door-open',
-    'open_movie': 'bi-box-arrow-up-right',
+    'open_movie': 'bi-film',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
