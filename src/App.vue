@@ -26,6 +26,8 @@ function event_to_icon(event) {
     'page_nav': 'bi-arrow-right',
     'vimeo_play': 'bi-play-fill',
     'vimeo_pause': 'bi-pause-fill',
+    'youtube_play': 'bi-play-fill',
+    'youtube_pause': 'bi-pause-fill',
     'filter_use': 'bi-funnel',
     'return_arrow': 'bi-arrow-90deg-left',
     'up_arrow': 'bi-arrow-90deg-up',
@@ -42,7 +44,7 @@ function event_to_icon(event) {
 function event_to_color(event) {
   let event_name = event['name']
 
-  let opacity = 0.25;
+  let opacity = 0.15;
   let sat = '100%';
   let bright = '50%';
 
@@ -50,6 +52,8 @@ function event_to_color(event) {
     'page_nav': `hsla(160, ${sat}, ${bright},${opacity})`,
     'vimeo_play': `hsla(50,${sat},${bright},${opacity})`,
     'vimeo_pause': `hsla(35,${sat},${bright},${opacity})`,
+    'youtube_play': `hsla(50,${sat},${bright},${opacity})`,
+    'youtube_pause': `hsla(35,${sat},${bright},${opacity})`,
     'filter_use': `hsla(312,${sat},${bright},${opacity})`,
     'return_arrow': `hsla(118,${sat},${bright},${opacity})`,
     'up_arrow': `hsla(118,${sat},${bright},${opacity})`,
@@ -95,6 +99,16 @@ function sortDates(arr) {
 
 }
 
+function formatTitle(event) {
+  // console.log(JSON.parse(JSON.stringify(event)))
+
+  if (['youtube_pause', 'vimeo_pause'].includes(event['name'])) return parse_seconds(Math.round(event['info']))
+
+  if (event['name'] === 'return_arrow') return 'return arrow'
+
+  return event['info']
+}
+
 onMounted(() => {
   fetch_events()
 })
@@ -115,7 +129,7 @@ onMounted(() => {
           <p :class="`${event_to_icon(event)} event_icon`"
              :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
 
-          <p class="event_title">{{ event['info'] !== 'null' ? event['info'] : event['name'] }}</p>
+          <p class="event_title">{{ formatTitle(event) }}</p>
 
           <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
                v-if="event['diff']>5">
@@ -198,17 +212,13 @@ onMounted(() => {
 }
 
 .event_wrapper p {
-  font-size: 0.8em;
   line-height: normal;
-
-  /*white-space: nowrap;*/
-  /*overflow: hidden;*/
 }
 
 .event_title {
   text-align: left;
   line-height: 1;
-  font-size: 1.5em;
+  font-size: 0.7em;
   color: #d5d5d5;
 
   margin-top: auto;
