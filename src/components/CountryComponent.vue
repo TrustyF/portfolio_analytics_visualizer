@@ -2,6 +2,7 @@
 import {inject, onMounted, watch, ref, computed} from "vue";
 import portfolio from '@/assets/portfolio.ico'
 import trusty_corner from '@/assets/trusty_corner.ico'
+import shufflers from '@/assets/shufflers.ico'
 
 let props = defineProps({
   data: {
@@ -18,6 +19,7 @@ function source_icon(src) {
   let mapping = {
     'portfolio': portfolio,
     'trusty_corner': trusty_corner,
+    'shufflers': shufflers,
   }
   return mapping[src]
 }
@@ -26,6 +28,7 @@ function source_color(src) {
   let mapping = {
     'portfolio': 'green',
     'trusty_corner': 'purple',
+    'shufflers': 'yellow',
   }
   return mapping[src]
 }
@@ -48,7 +51,7 @@ function getFlagEmoji(countryCode) {
     <h4 class="underline">{{
         `${time} - ${data['geo']['zipcode']} - ${data['source']}`
       }}</h4>
-<!--    <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">-->
+    <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
   </div>
 </template>
 
@@ -74,12 +77,15 @@ function getFlagEmoji(countryCode) {
 .purple {
   background-color: #2a1240;
 }
+.yellow {
+  background-color: #403512;
+}
 .source {
   position: absolute;
   right: 0;
   top: 0;
   margin: 5px;
-  width: 20px;
+  width: 15px;
   object-fit: cover;
   opacity: 0.7;
   /*background-color: #282828;*/
