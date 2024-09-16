@@ -34,6 +34,7 @@ function event_to_icon(event) {
     'open_new_tab': 'bi-arrow-up-right-square',
     'page_leave': 'bi-door-open',
     'open_movie': 'bi-film',
+    'anchor_in_view': 'bi-arrow-down',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -60,6 +61,7 @@ function event_to_color(event) {
     'open_new_tab': `hsla(182,${sat},${bright},${opacity})`,
     'page_leave': `hsla(0,${sat},${bright},${opacity})`,
     'open_movie': `hsla(20,${sat},${bright},${opacity})`,
+    'anchor_in_view': `hsla(100,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
@@ -132,7 +134,7 @@ onMounted(() => {
           <p class="event_title">{{ formatTitle(event) }}</p>
 
           <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-               v-if="event['diff']>5">
+               v-if="event['diff']>0">
             <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
             <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
           </div>
