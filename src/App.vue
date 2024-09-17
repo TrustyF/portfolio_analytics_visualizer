@@ -109,6 +109,11 @@ function formatTitle(event) {
   return event['info']
 }
 
+function formatDate(date){
+  let form = date.split('-')
+  return `${form[2]}/${form[1]}/${form[0]}`
+}
+
 onMounted(() => {
   fetch_events()
 })
@@ -123,15 +128,10 @@ onMounted(() => {
 
   <div class="wrapper">
     <div :class="`date_wrapper `" v-for="(users,date) in sortDates(events)" :key="date">
-      <h4 style="position: absolute;top: -30px">{{ date }}</h4>
+      <h4 style="position: absolute;top: -30px">{{ formatDate(date) }}</h4>
 
       <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
-
-<!--        <div class="user_total_time">-->
-<!--          <h4 class="time_title">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>-->
-<!--          <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>-->
-<!--        </div>-->
 
         <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
 
