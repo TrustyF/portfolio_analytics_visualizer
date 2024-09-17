@@ -4,10 +4,13 @@ import {computed, onBeforeUnmount, onMounted, ref} from "vue";
 import DeviceComponent from "@/components/DeviceComponent.vue";
 import axios from "axios"
 import HeaderComponent from "@/components/HeaderComponent.vue";
+import ToggleComponent from "@/components/ToggleComponent.vue";
 
 // let dev = import.meta.env.DEV
 let dev = false
 let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
+
+let is_0_event_hidden = ref(true)
 
 function parse_seconds(time) {
   let min = Math.floor(time / 60);
@@ -35,6 +38,7 @@ function event_to_icon(event) {
     'page_leave': 'bi-door-open',
     'open_movie': 'bi-film',
     'anchor_in_view': 'bi-arrow-down',
+    'image_nav': 'bi-image',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -62,6 +66,7 @@ function event_to_color(event) {
     'page_leave': `hsla(0,${sat},${bright},${opacity})`,
     'open_movie': `hsla(20,${sat},${bright},${opacity})`,
     'anchor_in_view': `hsla(100,${sat},${bright},${opacity})`,
+    'image_nav': `hsla(200,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
@@ -118,12 +123,25 @@ onMounted(() => {
 </script>
 
 <template>
+
+  <div class="settings_wrapper">
+    <toggle-component title="hide 0 event" :def="is_0_event_hidden" @toggle="is_0_event_hidden=$event"/>
+  </div>
+
   <div class="wrapper">
     <div :class="`date_wrapper `" v-for="(users,date) in sortDates(events)" :key="date">
       <h4 style="position: absolute;top: -30px">{{ date }}</h4>
 
-      <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user">
+      <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user"
+           v-show="is_0_event_hidden ? data['total_time']>0 : true">
+
+        <div class="user_total_time">
+          <h4 class="time_title">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
+          <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+        </div>
+
         <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+
         <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
               padding-bottom:${event['diff']>20 ? event['diff']*2 : 0}px`"
              v-for="(event) in data['events']" :key="event['timestamp']">
@@ -147,6 +165,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.settings_wrapper {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
 .wrapper {
   /*outline: 1px solid blue;*/
   display: flex;
@@ -196,7 +219,20 @@ onMounted(() => {
   align-content: flex-start;
   width: 260px;
 }
+.user_total_time {
+  /*position: absolute;*/
+  z-index: 10;
 
+  display: flex;
+  align-items: center;
+  left: 10px;
+  top: 0;
+  gap: 5px;
+
+  padding: 3px;
+  background-color: #383838;
+  border-radius: 5px;
+}
 .event_wrapper {
   position: relative;
   /*padding: 10px;*/
