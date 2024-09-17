@@ -5,6 +5,7 @@ import DeviceComponent from "@/components/DeviceComponent.vue";
 import axios from "axios"
 import HeaderComponent from "@/components/HeaderComponent.vue";
 import ToggleComponent from "@/components/ToggleComponent.vue";
+import {parse_seconds} from "@/helpers.js";
 
 // let dev = import.meta.env.DEV
 let dev = false
@@ -12,14 +13,6 @@ let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.p
 
 let is_0_event_hidden = ref(true)
 
-function parse_seconds(time) {
-  let min = Math.floor(time / 60);
-  let sec = time % 60;
-
-  if (min > 10) return '+10'
-
-  return String(min) + ':' + String(sec).padStart(2, '0');
-}
 
 function event_to_icon(event) {
 
@@ -135,10 +128,10 @@ onMounted(() => {
       <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
 
-        <div class="user_total_time">
-          <h4 class="time_title">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
-          <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
-        </div>
+<!--        <div class="user_total_time">-->
+<!--          <h4 class="time_title">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>-->
+<!--          <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>-->
+<!--        </div>-->
 
         <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
 
@@ -219,20 +212,7 @@ onMounted(() => {
   align-content: flex-start;
   width: 260px;
 }
-.user_total_time {
-  /*position: absolute;*/
-  z-index: 10;
 
-  display: flex;
-  align-items: center;
-  left: 10px;
-  top: 0;
-  gap: 5px;
-
-  padding: 3px;
-  background-color: #383838;
-  border-radius: 5px;
-}
 .event_wrapper {
   position: relative;
   /*padding: 10px;*/

@@ -1,5 +1,6 @@
 <script setup>
 import {inject, onMounted, watch, ref, computed} from "vue";
+import {parse_seconds} from "@/helpers.js";
 import portfolio from '@/assets/portfolio.ico'
 import trusty_corner from '@/assets/trusty_corner.ico'
 import shufflers from '@/assets/shufflers.ico'
@@ -46,12 +47,17 @@ function getFlagEmoji(countryCode) {
 
 <template>
   <div :class="`country_wrapper ${source_color(data['source'])}`">
-
     <h3 class="overline">{{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}</h3>
     <h4 class="underline">{{
         `${time} - ${data['geo']['zipcode']} - ${data['source']}`
       }}</h4>
     <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
+
+    <div class="user_total_time">
+      <h4 class="underline">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
+      <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+    </div>
+
   </div>
 </template>
 
@@ -71,15 +77,25 @@ function getFlagEmoji(countryCode) {
   border-radius: 10px;
   overflow: hidden;
 }
-.green {
-  background-color: #06402d;
+
+.user_total_time {
+  position: absolute;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  right: 0;
+  bottom: 0;
+  gap: 5px;
+
+  opacity: 0.5;
+  font-size: 0.8em;
+
+  padding: 3px;
+  /*background-color: #383838;*/
+  border-radius: 5px;
 }
-.purple {
-  background-color: #2a1240;
-}
-.yellow {
-  background-color: #403512;
-}
+
 .source {
   position: absolute;
   right: 0;
@@ -90,6 +106,7 @@ function getFlagEmoji(countryCode) {
   opacity: 0.7;
   /*background-color: #282828;*/
 }
+
 .overline {
   white-space: nowrap;
   color: white;
@@ -100,6 +117,7 @@ function getFlagEmoji(countryCode) {
   white-space: nowrap;
   font-size: 0.7em;
 }
+
 .bg_flag {
   position: absolute;
   width: 100%;
@@ -118,4 +136,17 @@ function getFlagEmoji(countryCode) {
 .flag {
   height: 15px;
 }
+
+.green {
+  background-color: #06402d;
+}
+
+.purple {
+  background-color: #2a1240;
+}
+
+.yellow {
+  background-color: #403512;
+}
+
 </style>
