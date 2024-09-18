@@ -1,9 +1,7 @@
 <script setup>
 import CountryComponent from "@/components/CountryComponent.vue";
-import {computed, onBeforeUnmount, onMounted, ref} from "vue";
-import DeviceComponent from "@/components/DeviceComponent.vue";
+import {onMounted, ref} from "vue";
 import axios from "axios"
-import HeaderComponent from "@/components/HeaderComponent.vue";
 import ToggleComponent from "@/components/ToggleComponent.vue";
 import {parse_seconds} from "@/helpers.js";
 
@@ -12,6 +10,8 @@ let dev = false
 let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 let is_0_event_hidden = ref(true)
+
+let uid_refs = ref([])
 
 
 function event_to_icon(event) {
@@ -109,9 +109,24 @@ function formatTitle(event) {
   return event['info']
 }
 
-function formatDate(date){
+function formatDate(date) {
   let form = date.split('-')
   return `${form[2]}/${form[1]}/${form[0]}`
+}
+
+async function delete_uid(uid) {
+  const url = `${curr_api}/event/delete`
+  console.log(uid)
+  const params = {
+    user_id: uid
+  }
+
+  const result = await axios.delete(url, {params: params})
+      .then(response => response.data.success)
+
+  if (result) {
+    window.document.getElementById(`user_${uid}`).remove()
+  }
 }
 
 onMounted(() => {
@@ -130,27 +145,34 @@ onMounted(() => {
     <div :class="`date_wrapper `" v-for="(users,date) in sortDates(events)" :key="date">
       <h4 style="position: absolute;top: -30px">{{ formatDate(date) }}</h4>
 
-      <div class="user_wrapper" v-for="(data,user) in sortEventDates(users)" :key="user"
+      <div class="user_wrapper" v-for="data in sortEventDates(users)" :key="data['uid']" :id="`user_${data['uid']}`"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
 
         <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
 
-        <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
+        <div class="user_feed">
+          <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
               padding-bottom:${event['diff']>20 ? event['diff']*2 : 0}px`"
-             v-for="(event) in data['events']" :key="event['timestamp']">
+               v-for="(event) in data['events']" :key="event['timestamp']">
 
-          <p :class="`${event_to_icon(event)} event_icon`"
-             :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
+            <p :class="`${event_to_icon(event)} event_icon`"
+               :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
 
-          <p class="event_title">{{ formatTitle(event) }}</p>
+            <p class="event_title">{{ formatTitle(event) }}</p>
 
-          <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-               v-if="event['diff']>0">
-            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+                 v-if="event['diff']>0">
+              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            </div>
+
           </div>
-
         </div>
+
+        <div class="bi-trash3-fill delete">
+          <div class="click_padding" @click="delete_uid(data['uid'])"/>
+        </div>
+
       </div>
 
     </div>
@@ -163,6 +185,7 @@ onMounted(() => {
   right: 10px;
   top: 10px;
 }
+
 .wrapper {
   /*outline: 1px solid blue;*/
   display: flex;
@@ -204,13 +227,52 @@ onMounted(() => {
   flex-flow: row wrap;
   gap: 10px;
   background-color: #282828;
-  /*width: 250px;*/
+
   padding: 15px;
   border-radius: 20px;
-  max-height: 500px;
-  overflow: scroll;
-  align-content: flex-start;
   width: 260px;
+}
+
+.user_feed {
+  /*outline: 1px solid red;*/
+  position: relative;
+  display: flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
+  gap: 10px;
+
+  width: 100%;
+  max-height: 300px;
+  overflow: scroll;
+}
+.user_wrapper:hover .delete {
+  opacity: 1;
+  visibility: visible;
+}
+.delete {
+  position: absolute;
+  right: -8px;
+  top: -2px;
+  font-size: 0.9em;
+  line-height: 0.9em;
+  padding: 5px;
+  border-radius: 50%;
+  background-color: #383838;
+  /*color: #484848;*/
+  transition: 200ms ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.click_padding {
+  z-index: 10;
+  position: absolute;
+  /*outline: 1px solid red;*/
+  cursor: pointer;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  padding: 20px;
 }
 
 .event_wrapper {
