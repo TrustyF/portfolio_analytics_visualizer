@@ -5,14 +5,11 @@ import axios from "axios"
 import ToggleComponent from "@/components/ToggleComponent.vue";
 import {parse_seconds} from "@/helpers.js";
 
-// let dev = import.meta.env.DEV
-let dev = false
+let dev = import.meta.env.DEV
+// let dev = true
 let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 let is_0_event_hidden = ref(true)
-
-let uid_refs = ref([])
-
 
 function event_to_icon(event) {
 
@@ -161,7 +158,7 @@ onMounted(() => {
             <p class="event_title">{{ formatTitle(event) }}</p>
 
             <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-                 v-if="event['diff']>0">
+                 >
               <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
               <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
             </div>
