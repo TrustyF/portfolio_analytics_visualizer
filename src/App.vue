@@ -5,9 +5,9 @@ import axios from "axios"
 import ToggleComponent from "@/components/ToggleComponent.vue";
 import {parse_seconds} from "@/helpers.js";
 
-let dev = import.meta.env.DEV
-// let dev = true
-let curr_api = dev ? 'http://192.168.1.11:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
+// let dev = import.meta.env.DEV
+let dev = false
+let curr_api = dev ? 'http://127.0.0.1:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 let is_0_event_hidden = ref(true)
 
@@ -78,22 +78,28 @@ async function fetch_events() {
   console.log(JSON.parse(JSON.stringify(events.value)))
 }
 
-function sortEventDates(arr) {
-  let objects = Object.values(arr)
-  return objects.sort((a, b) => new Date(b['events'][0]['timestamp']) - new Date(a['events'][0]['timestamp']))
+function groupDates(arr) {
+  arr.sort((a, b) => new Date(b['date']) - new Date(a['date']))
+
+  const yesterday = new Date()
+  yesterday.setDate(new Date().getDate() - 30)
+
+  arr = arr.filter(item => new Date(item['date']) > yesterday )
+
+  console.log(arr)
+
+  return arr.reduce((acc, item) => {
+    const date = item.date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(item);
+    return acc;
+  }, {});
 }
 
-function sortDates(arr) {
-  if (arr === undefined) {
-    return arr
-  }
-
-  let keys = Object.keys(arr).sort((a, b) => new Date(b) - new Date(a))
-  return keys.reduce((sortedObj, key) => {
-    sortedObj[key] = arr[key];
-    return sortedObj;
-  }, {});
-
+function sortEventDates(arr) {
+  return arr.sort((a, b) => new Date(b['date']) - new Date(a['date']))
 }
 
 function formatTitle(event) {
@@ -138,11 +144,12 @@ onMounted(() => {
     <toggle-component title="hide 0 event" :def="is_0_event_hidden" @toggle="is_0_event_hidden=$event"/>
   </div>
 
-  <div class="wrapper">
-    <div :class="`date_wrapper `" v-for="(users,date) in sortDates(events)" :key="date">
+  <div class="wrapper" v-if="events">
+
+    <div :class="`date_wrapper `" v-for="(users,date) in groupDates(events)" :key="date">
       <h4 style="position: absolute;top: -30px">{{ formatDate(date) }}</h4>
 
-      <div class="user_wrapper" v-for="data in sortEventDates(users)" :key="data['uid']" :id="`user_${data['uid']}`"
+      <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
 
         <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
@@ -158,7 +165,7 @@ onMounted(() => {
             <p class="event_title">{{ formatTitle(event) }}</p>
 
             <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-                 >
+            >
               <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
               <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
             </div>
@@ -173,6 +180,7 @@ onMounted(() => {
       </div>
 
     </div>
+
   </div>
 </template>
 
@@ -186,9 +194,10 @@ onMounted(() => {
 .wrapper {
   /*outline: 1px solid blue;*/
   display: flex;
-  flex-flow: column wrap;
+  flex-flow: row wrap;
   gap: 50px;
   width: 100%;
+  align-items: flex-start;
   margin-top: 10px;
 }
 
@@ -242,10 +251,12 @@ onMounted(() => {
   max-height: 300px;
   overflow: scroll;
 }
+
 .user_wrapper:hover .delete {
   opacity: 1;
   visibility: visible;
 }
+
 .delete {
   position: absolute;
   right: -8px;
@@ -268,7 +279,7 @@ onMounted(() => {
   cursor: pointer;
   left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   padding: 20px;
 }
 

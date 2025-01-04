@@ -5,16 +5,7 @@ import portfolio from '@/assets/portfolio.ico'
 import trusty_corner from '@/assets/trusty_corner.ico'
 import shufflers from '@/assets/shufflers.ico'
 
-let props = defineProps({
-  data: {
-    type: String,
-    default: null,
-  },
-  time: {
-    type: String,
-    default: null,
-  },
-});
+let props = defineProps({data: Object, time: String});
 
 function source_icon(src) {
   let mapping = {
@@ -47,10 +38,15 @@ function getFlagEmoji(countryCode) {
 
 <template>
   <div :class="`country_wrapper ${source_color(data['source'])}`">
-    <h3 class="overline">{{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}</h3>
-    <h4 class="underline">{{
-        `${time} - ${data['geo']['zipcode']} - ${data['source']}`
-      }}</h4>
+
+    <h3 class="overline" :title="data['geo']['state_prov']">
+      {{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}
+    </h3>
+
+    <h4 class="underline">
+      {{ `${data['date']} - ${time} - ${data['geo']['zipcode']}` }}
+    </h4>
+
     <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
 
     <div class="user_total_time">
@@ -108,13 +104,16 @@ function getFlagEmoji(countryCode) {
 }
 
 .overline {
+  width: 90%;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
   color: white;
   opacity: 0.8;
 }
 
 .underline {
-  white-space: nowrap;
+  white-space: wrap;
   font-size: 0.7em;
 }
 
