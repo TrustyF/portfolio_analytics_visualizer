@@ -1,6 +1,6 @@
 <script setup>
 import CountryComponent from "@/components/CountryComponent.vue";
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import axios from "axios"
 import ToggleComponent from "@/components/ToggleComponent.vue";
 import {parse_seconds} from "@/helpers.js";
@@ -10,6 +10,8 @@ let dev = false
 let curr_api = dev ? 'http://127.0.0.1:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
 let is_0_event_hidden = ref(true)
+let is_yale_event_hidden = ref(true)
+let day_range = ref(15)
 
 function event_to_icon(event) {
 
@@ -67,7 +69,8 @@ function format_date(date) {
   return new Date(date + 'Z').toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 }
 
-let events = ref()
+let events = ref([])
+let filtered_events = computed(() => groupDates(events.value))
 
 async function fetch_events() {
   const url = `${curr_api}/event/get`
@@ -75,18 +78,16 @@ async function fetch_events() {
 
   events.value = await axios.get(url, {params: params})
       .then(response => response.data)
-  console.log(JSON.parse(JSON.stringify(events.value)))
 }
 
 function groupDates(arr) {
   arr.sort((a, b) => new Date(b['date']) - new Date(a['date']))
 
   const yesterday = new Date()
-  yesterday.setDate(new Date().getDate() - 30)
+  yesterday.setDate(new Date().getDate() - day_range.value)
 
-  arr = arr.filter(item => new Date(item['date']) > yesterday )
-
-  console.log(arr)
+  arr = arr.filter(item => new Date(item['date']) > yesterday)
+  if (is_yale_event_hidden.value) arr = arr.filter(item => item['geo']['zipcode'] !== 'V6Z')
 
   return arr.reduce((acc, item) => {
     const date = item.date;
@@ -96,10 +97,6 @@ function groupDates(arr) {
     acc[date].push(item);
     return acc;
   }, {});
-}
-
-function sortEventDates(arr) {
-  return arr.sort((a, b) => new Date(b['date']) - new Date(a['date']))
 }
 
 function formatTitle(event) {
@@ -113,8 +110,14 @@ function formatTitle(event) {
 }
 
 function formatDate(date) {
-  let form = date.split('-')
-  return `${form[2]}/${form[1]}/${form[0]}`
+  const givenDate = new Date(date);
+  const today = new Date();
+  const diffTime = today - givenDate;
+
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  // let form = date.split('-')
+  // return `${form[2]}/${form[1]}/${form[0]}`
 }
 
 async function delete_uid(uid) {
@@ -142,12 +145,15 @@ onMounted(() => {
 
   <div class="settings_wrapper">
     <toggle-component title="hide 0 event" :def="is_0_event_hidden" @toggle="is_0_event_hidden=$event"/>
+    <toggle-component title="hide yaletown event" :def="is_yale_event_hidden" @toggle="is_yale_event_hidden=$event"/>
+    <label for="day_range" style="margin-right: 10px;display: inline-block;width: 20px">{{ day_range }}</label>
+    <input id="day_range" style="" type="range" step="1" min="0" max="50" v-model="day_range">
   </div>
 
-  <div class="wrapper" v-if="events">
+  <div class="wrapper" v-if="Object.keys(filtered_events).length > 0">
 
-    <div :class="`date_wrapper `" v-for="(users,date) in groupDates(events)" :key="date">
-      <h4 style="position: absolute;top: -30px">{{ formatDate(date) }}</h4>
+    <div :class="`date_wrapper `" v-for="(users,date) in filtered_events" :key="date">
+      <h4 style="position: absolute;top: -30px">{{ formatDate(date) + " days ago" }}</h4>
 
       <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
@@ -182,6 +188,11 @@ onMounted(() => {
     </div>
 
   </div>
+
+  <div v-else>
+    <h4>No new events</h4>
+  </div>
+
 </template>
 
 <style scoped>
@@ -194,11 +205,12 @@ onMounted(() => {
 .wrapper {
   /*outline: 1px solid blue;*/
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column wrap;
   gap: 50px;
   width: 100%;
   align-items: flex-start;
-  margin-top: 10px;
+  justify-content: center;
+  margin-top: 30px;
 }
 
 .date_wrapper {
