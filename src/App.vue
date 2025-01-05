@@ -9,6 +9,8 @@ import {parse_seconds} from "@/helpers.js";
 let dev = false
 let curr_api = dev ? 'http://127.0.0.1:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
+let event_loading = ref("unloaded")
+
 let is_0_event_hidden = ref(true)
 let is_yale_event_hidden = ref(true)
 let day_range = ref(15)
@@ -73,11 +75,18 @@ let events = ref([])
 let filtered_events = computed(() => groupDates(events.value))
 
 async function fetch_events() {
+
+  event_loading.value = "loading"
+  console.log('loading')
   const url = `${curr_api}/event/get`
   const params = {}
 
   events.value = await axios.get(url, {params: params})
       .then(response => response.data)
+
+  event_loading.value = "loaded"
+  console.log('loaded')
+
 }
 
 function groupDates(arr) {
@@ -150,6 +159,8 @@ onMounted(() => {
     <input id="day_range" style="" type="range" step="1" min="0" max="50" v-model="day_range">
   </div>
 
+  <div class="spinner-border" v-if="event_loading==='loading'" role="status"/>
+
   <div class="wrapper" v-if="Object.keys(filtered_events).length > 0">
 
     <div :class="`date_wrapper `" v-for="(users,date) in filtered_events" :key="date">
@@ -189,7 +200,7 @@ onMounted(() => {
 
   </div>
 
-  <div v-else>
+  <div v-else-if="event_loading==='loaded'">
     <h4>No new events</h4>
   </div>
 
