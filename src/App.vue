@@ -166,36 +166,41 @@ onMounted(() => {
   <div class="wrapper" v-if="Object.keys(filtered_events).length > 0">
 
     <div :class="`date_wrapper `" v-for="(users,date) in filtered_events" :key="date">
-      <h4 style="position: absolute;top: -40px" v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>
 
-      <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
-           v-show="is_0_event_hidden ? data['total_time']>0 : true">
+      <h4 v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>
 
-        <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+      <div class="post_date_wrapper">
+        <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
+             v-show="is_0_event_hidden ? data['total_time']>0 : true">
 
-        <div class="user_feed">
-          <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
-              padding-bottom:${event['diff']>20 ? event['diff']*2 : 0}px`"
-               v-for="(event) in data['events']" :key="event['timestamp']">
+          <div class="new_badge bi-patch-exclamation-fill" v-show="formatDate(date) < 1"></div>
 
-            <p :class="`${event_to_icon(event)} event_icon`"
-               :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
+          <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
 
-            <p class="event_title">{{ formatTitle(event) }}</p>
+          <div class="user_feed">
+            <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
+              padding-bottom:${event['diff']>20 ? Math.min(event['diff']*2,300) : 0}px`"
+                 v-for="(event) in data['events']" :key="event['timestamp']">
 
-            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-            >
-              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+              <p :class="`${event_to_icon(event)} event_icon`"
+                 :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
+
+              <p class="event_title">{{ formatTitle(event) }}</p>
+
+              <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+              >
+                <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+                <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+              </div>
+
             </div>
-
           </div>
-        </div>
 
-        <div class="bi-trash3-fill delete">
-          <div class="click_padding" @click="delete_uid(data['uid'])"/>
-        </div>
+          <div class="bi-trash3-fill delete">
+            <div class="click_padding" @click="delete_uid(data['uid'])"/>
+          </div>
 
+        </div>
       </div>
 
     </div>
@@ -228,23 +233,20 @@ onMounted(() => {
 .date_wrapper {
   position: relative;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column wrap;
   align-items: flex-start;
 
-  margin-bottom: 30px;
   gap: 20px;
   border-radius: 10px;
 }
 
-.source_wrapper {
+.post_date_wrapper {
   position: relative;
-  /*outline: 1px solid orange;*/
   display: flex;
-  flex-flow: column;
+  flex-flow: row wrap;
+  align-items: flex-start;
 
-  gap: 10px;
-  /*border: 1px solid #282828;*/
-  padding: 10px;
+  gap: 20px;
   border-radius: 10px;
 }
 
@@ -260,17 +262,29 @@ onMounted(() => {
   width: 260px;
 }
 
+.new_badge {
+  color: hsl(400, 70%, 50%);
+  position: absolute;
+  font-size: 1.5em;
+  left: -10px;
+  top: -15px;
+  text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.60);
+}
+
 .user_feed {
   /*outline: 1px solid red;*/
   position: relative;
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: column;
   align-content: flex-start;
   gap: 10px;
 
   width: 100%;
-  max-height: 300px;
-  overflow: scroll;
+  max-height: 400px;
+  padding: 3px;
+  overflow-y: scroll;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .user_wrapper:hover .delete {
@@ -317,7 +331,8 @@ onMounted(() => {
 
   gap: 10px;
   width: 100%;
-  height: 30px;
+  height: 25px;
+  box-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
 }
 
 .event_wrapper p {
