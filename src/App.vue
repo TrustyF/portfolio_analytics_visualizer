@@ -178,19 +178,25 @@ onMounted(() => {
           <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
 
           <div class="user_feed">
-            <div class="event_wrapper" :style="`background-color:${event_to_color(event)};
-              padding-bottom:${event['diff']>20 ? Math.min(event['diff']*2,300) : 0}px`"
-                 v-for="(event) in data['events']" :key="event['timestamp']">
+            <div v-for="(event,index) in data['events']" :key="event['timestamp']">
 
-              <p :class="`${event_to_icon(event)} event_icon`"
-                 :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
+              <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
+                <p :class="`${event_to_icon(event)} event_icon`"
+                   :style="`font-size: 1em;background-color:${event_to_color(event)};`"/>
 
-              <p class="event_title">{{ formatTitle(event) }}</p>
+                <p class="event_title">{{ formatTitle(event) }}</p>
 
-              <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-              >
-                <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-                <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+                <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+                >
+                  <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+                  <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+                </div>
+
+              </div>
+
+              <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
+                <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),100))"
+                     :key="'dot_time_'+index"/>
               </div>
 
             </div>
@@ -277,10 +283,10 @@ onMounted(() => {
   display: flex;
   flex-flow: column;
   align-content: flex-start;
-  gap: 10px;
+  gap: 5px;
 
   width: 100%;
-  max-height: 400px;
+  max-height: 600px;
   padding: 3px;
   overflow-y: scroll;
   -ms-overflow-style: none; /* IE and Edge */
@@ -331,7 +337,7 @@ onMounted(() => {
 
   gap: 10px;
   width: 100%;
-  height: 25px;
+  height: 30px;
   box-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
 }
 
@@ -364,6 +370,23 @@ onMounted(() => {
   aspect-ratio: 1;
   color: white;
   height: 100%;
+}
+
+.time_dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  z-index: -1;
+  gap: 5px;
+  margin: 0 0 -5px 0;
+}
+
+.t_dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .time_sep {

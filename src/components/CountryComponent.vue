@@ -40,23 +40,25 @@ function getFlagEmoji(countryCode) {
 </script>
 
 <template>
-  <div :class="`country_wrapper ${source_color(data['source'])}`">
+  <div style="display:flex;flex-flow: column;width: 100%;gap: 0">
+    <div :class="`country_wrapper ${source_color(data['source'])}`">
 
-    <h3 class="overline" :title="data['geo']['state_prov']">
-      {{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}
-    </h3>
+      <h3 class="overline" :title="data['geo']['state_prov']">
+        {{ `${getFlagEmoji(data['geo']['country_code2'])} ${data['geo']['state_prov']}` }}
+      </h3>
 
-    <h4 class="underline">
-      {{ `${data['date']} - ${time} - ${data['geo']['zipcode']}` }}
-    </h4>
+      <h4 class="underline">
+        {{ `${time} - ${data['geo']['zipcode']}` }}
+      </h4>
 
-    <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
+      <div class="user_total_time">
+        <h4 class="underline">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
+        <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+      </div>
 
-    <div class="user_total_time">
-      <h4 class="underline">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
-      <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+      <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
+
     </div>
-
   </div>
 </template>
 
@@ -83,8 +85,8 @@ function getFlagEmoji(countryCode) {
 
   display: flex;
   align-items: center;
-  right: 0;
-  bottom: 0;
+  right: 5px;
+  bottom: 5px;
   gap: 5px;
 
   opacity: 0.5;
