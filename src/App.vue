@@ -129,9 +129,6 @@ function formatDate(date) {
   const diffTime = today - givenDate;
 
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  // let form = date.split('-')
-  // return `${form[2]}/${form[1]}/${form[0]}`
 }
 
 async function delete_uid(uid) {
@@ -169,7 +166,7 @@ onMounted(() => {
   <div class="wrapper" v-if="Object.keys(filtered_events).length > 0">
 
     <div :class="`date_wrapper `" v-for="(users,date) in filtered_events" :key="date">
-      <h4 style="position: absolute;top: -30px">{{ formatDate(date) + " days ago" }}</h4>
+      <h4 style="position: absolute;top: -40px" v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>
 
       <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
            v-show="is_0_event_hidden ? data['total_time']>0 : true">
@@ -226,7 +223,6 @@ onMounted(() => {
   width: 100%;
   align-items: flex-start;
   justify-content: center;
-  margin-top: 30px;
 }
 
 .date_wrapper {
@@ -234,12 +230,9 @@ onMounted(() => {
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
-  /*justify-content: flex-end;*/
 
-  margin-top: 30px;
+  margin-bottom: 30px;
   gap: 20px;
-  border: 1px solid #282828;
-  padding: 10px;
   border-radius: 10px;
 }
 
@@ -250,7 +243,7 @@ onMounted(() => {
   flex-flow: column;
 
   gap: 10px;
-  border: 1px solid #282828;
+  /*border: 1px solid #282828;*/
   padding: 10px;
   border-radius: 10px;
 }
