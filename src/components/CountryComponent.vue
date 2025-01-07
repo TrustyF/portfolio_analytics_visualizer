@@ -4,6 +4,7 @@ import {parse_seconds} from "@/helpers.js";
 import portfolio from '@/assets/portfolio.ico'
 import trusty_corner from '@/assets/trusty_corner.ico'
 import shufflers from '@/assets/shufflers.ico'
+import houdini_icons from '@/assets/houdini_icons.ico'
 
 let props = defineProps({data: Object, time: String});
 
@@ -12,6 +13,7 @@ function source_icon(src) {
     'portfolio': portfolio,
     'trusty_corner': trusty_corner,
     'shufflers': shufflers,
+    'houdini_icons': houdini_icons,
   }
   return mapping[src]
 }
@@ -21,6 +23,7 @@ function source_color(src) {
     'portfolio': 'green',
     'trusty_corner': 'purple',
     'shufflers': 'yellow',
+    'houdini_icons': 'orange',
   }
   return mapping[src]
 }
@@ -146,6 +149,10 @@ function getFlagEmoji(countryCode) {
 
 .yellow {
   background-color: #403512;
+}
+
+.orange {
+  background-color: #402512;
 }
 
 </style>

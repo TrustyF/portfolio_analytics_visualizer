@@ -31,8 +31,11 @@ function event_to_icon(event) {
     'open_new_tab': 'bi-arrow-up-right-square',
     'page_leave': 'bi-door-open',
     'open_movie': 'bi-film',
-    'anchor_in_view': 'bi-arrow-down',
+    'anchor_in_view': 'bi-mouse',
     'image_nav': 'bi-image',
+    'expanded': 'bi-hand-index-thumb',
+    'search': 'bi-search',
+    'search_use': 'bi-search',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -61,6 +64,9 @@ function event_to_color(event) {
     'open_movie': `hsla(20,${sat},${bright},${opacity})`,
     'anchor_in_view': `hsla(100,${sat},${bright},${opacity})`,
     'image_nav': `hsla(200,${sat},${bright},${opacity})`,
+    'search': `hsla(350,${sat},${bright},${opacity})`,
+    'search_use': `hsla(350,${sat},${bright},${opacity})`,
+    'expanded': `hsla(100,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
@@ -77,7 +83,6 @@ let filtered_events = computed(() => groupDates(events.value))
 async function fetch_events() {
 
   event_loading.value = "loading"
-  console.log('loading')
   const url = `${curr_api}/event/get`
   const params = {}
 
@@ -85,7 +90,7 @@ async function fetch_events() {
       .then(response => response.data)
 
   event_loading.value = "loaded"
-  console.log('loaded')
+  console.log('loaded', events.value)
 
 }
 
