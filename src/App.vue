@@ -103,7 +103,7 @@ function groupDates(arr) {
   arr = arr.filter(item => new Date(item['date']) > yesterday)
   if (is_yale_event_hidden.value) arr = arr.filter(item => item['geo']['zipcode'] !== 'V6Z')
 
-  return arr.reduce((acc, item) => {
+  const reduced = arr.reduce((acc, item) => {
     const date = item.date;
     if (!acc[date]) {
       acc[date] = [];
@@ -111,6 +111,15 @@ function groupDates(arr) {
     acc[date].push(item);
     return acc;
   }, {});
+
+  return reduced
+}
+
+function sortedUsers(arr) {
+  arr.sort((a, b) => {
+    return new Date(b['first_touch']) - new Date(a['first_touch'])
+  })
+  return arr
 }
 
 function formatTitle(event) {
@@ -170,14 +179,14 @@ onMounted(() => {
       <h4 v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>
 
       <div class="post_date_wrapper">
-        <div class="user_wrapper" v-for="data in users" :key="data['uid']" :id="`user_${data['uid']}`"
+        <div class="user_wrapper" v-for="data in sortedUsers(users)" :key="data['uid']" :id="`user_${data['uid']}`"
              v-show="is_0_event_hidden ? data['total_time']>0 : true">
 
           <div class="new_badge bi-patch-exclamation-fill" v-show="formatDate(date) < 1"></div>
 
-          <country-component :data="data" :time="format_date(data['events'][0]['timestamp'])"/>
+          <country-component :data="data"/>
 
-          <div class="user_feed">
+          <div class="user_feed" v-if="data['events'].length > 0">
             <div v-for="(event,index) in data['events']" :key="event['timestamp']">
 
               <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
@@ -195,7 +204,7 @@ onMounted(() => {
               </div>
 
               <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
-                <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),100))"
+                <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),15))"
                      :key="'dot_time_'+index"/>
               </div>
 
@@ -221,9 +230,10 @@ onMounted(() => {
 
 <style scoped>
 .settings_wrapper {
-  position: absolute;
+  position: fixed;
+  z-index: 10;
   right: 10px;
-  top: 10px;
+  bottom: 10px;
 }
 
 .wrapper {
@@ -286,7 +296,7 @@ onMounted(() => {
   gap: 5px;
 
   width: 100%;
-  max-height: 600px;
+  max-height: 400px;
   padding: 3px;
   overflow-y: scroll;
   -ms-overflow-style: none; /* IE and Edge */

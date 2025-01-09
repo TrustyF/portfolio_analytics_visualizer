@@ -6,7 +6,7 @@ import trusty_corner from '@/assets/trusty_corner.ico'
 import shufflers from '@/assets/shufflers.ico'
 import houdini_icons from '@/assets/houdini_icons.ico'
 
-let props = defineProps({data: Object, time: String});
+let props = defineProps({data: Object});
 
 function source_icon(src) {
   let mapping = {
@@ -36,6 +36,14 @@ function getFlagEmoji(countryCode) {
   return String.fromCodePoint(...codePoints);
 }
 
+function firstTimestampFormat(time) {
+  const date = new Date(time)
+
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+}
+
 
 </script>
 
@@ -48,7 +56,7 @@ function getFlagEmoji(countryCode) {
       </h3>
 
       <h4 class="underline">
-        {{ `${time} - ${data['geo']['zipcode']}` }}
+        {{ `${firstTimestampFormat(data['first_touch'])} - ${data['geo']['zipcode']}` }}
       </h4>
 
       <div class="user_total_time">
