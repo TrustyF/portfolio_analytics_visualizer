@@ -36,12 +36,24 @@ function getFlagEmoji(countryCode) {
   return String.fromCodePoint(...codePoints);
 }
 
-function firstTimestampFormat(time) {
+function firstTimestampFormat(time,geo) {
   const date = new Date(time)
 
-  const hours = date.getHours();
+  const now = new Date();
+  const timeDifferenceInHours = Math.floor((now - date) / (1000 * 60 * 60));
+
+  if (timeDifferenceInHours < 10) {
+    return `${timeDifferenceInHours} hours ago`;
+  }
+
+  let hours = date.getHours();
   const minutes = date.getMinutes();
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+  const amPm = hours >= 12 ? 'PM' : 'AM';
+
+  // Convert to 12-hour format
+  hours = hours % 12 || 12;
+
+  return `${hours}:${minutes.toString().padStart(2, '0')} ${amPm}`;
 }
 
 
@@ -56,7 +68,7 @@ function firstTimestampFormat(time) {
       </h3>
 
       <h4 class="underline">
-        {{ `${firstTimestampFormat(data['first_touch'])} - ${data['geo']['zipcode']}` }}
+        {{ `${firstTimestampFormat(data['first_touch'],data['geo'])} - ${data['geo']['zipcode']}` }}
       </h4>
 
       <div class="user_total_time">
