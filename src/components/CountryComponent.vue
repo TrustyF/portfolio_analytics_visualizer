@@ -42,7 +42,7 @@ function firstTimestampFormat(time,geo) {
   const now = new Date();
   const timeDifferenceInHours = Math.floor((now - date) / (1000 * 60 * 60));
 
-  if (timeDifferenceInHours < 10) {
+  if (timeDifferenceInHours < 24) {
     return `${timeDifferenceInHours} hours ago`;
   }
 

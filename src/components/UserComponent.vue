@@ -11,7 +11,7 @@ let props = defineProps({
 let emits = defineEmits(["test"]);
 const curr_api = inject("curr_api");
 
-let events_collapsed = ref(false)
+let events_collapsed = ref(true)
 
 async function delete_uid(uid) {
   const url = `${curr_api}/event/delete`
@@ -156,29 +156,29 @@ function groupEvents(events) {
 
     <div class="user_feed" v-if="data['events'].length > 0" v-show="!events_collapsed">
 
-      <div v-for="(event,index) in data['events']" :key="event['timestamp']">
+        <div v-for="(event,index) in data['events']" :key="event['timestamp']">
 
-        <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
-          <p :class="`${event_to_icon(event)} event_icon`"
-             :style="`font-size: 0.8em;background-color:${event_to_color(event)};`"/>
+          <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
+            <p :class="`${event_to_icon(event)} event_icon`"
+               :style="`font-size: 0.8em;background-color:${event_to_color(event)};`"/>
 
-          <p class="event_title">{{ formatTitle(event) }}</p>
+            <p class="event_title">{{ formatTitle(event) }}</p>
 
-          <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-          >
-            <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-            <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
+            >
+              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
+              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
+            </div>
+
+          </div>
+
+          <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
+            <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),10))"
+                 :key="'dot_time_'+index"/>
           </div>
 
         </div>
-
-        <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
-          <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),10))"
-               :key="'dot_time_'+index"/>
-        </div>
-
       </div>
-    </div>
 
     <div class="bi-trash3-fill delete">
       <div class="click_padding" @click="delete_uid(data['uid'])"/>
