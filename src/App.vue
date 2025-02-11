@@ -14,8 +14,14 @@ provide('curr_api',curr_api)
 let event_loading = ref("unloaded")
 
 let is_0_event_hidden = ref(true)
+let is_events_hidden = ref(true)
+let is_no_events_user_hidden = ref(false)
 let is_yale_event_hidden = ref(true)
 let day_range = ref(25)
+
+provide('is_events_hidden', is_events_hidden)
+provide('is_no_events_user_hidden', is_no_events_user_hidden)
+
 
 let events = ref([])
 let filtered_events = computed(() => groupDates(events.value))
@@ -42,6 +48,7 @@ function groupDates(arr) {
 
   arr = arr.filter(item => new Date(item['date']) > yesterday)
   if (is_yale_event_hidden.value) arr = arr.filter(item => item['geo']['zipcode'] !== 'V6Z')
+  if (is_no_events_user_hidden.value) arr = arr.filter(item => item['events'].length > 0)
 
   const reduced = arr.reduce((acc, item) => {
     const date = item.date;
@@ -62,7 +69,6 @@ function sortedUsers(arr) {
   return arr
 }
 
-
 function formatDate(date) {
   const givenDate = new Date(date);
   const today = new Date();
@@ -81,6 +87,8 @@ onMounted(() => {
 <template>
 
   <div class="settings_wrapper">
+    <toggle-component title="hide no event users" :def="is_no_events_user_hidden" @toggle="is_no_events_user_hidden=$event"/>
+    <toggle-component title="hide all events" :def="is_events_hidden" @toggle="is_events_hidden=$event"/>
     <toggle-component title="hide 0 event" :def="is_0_event_hidden" @toggle="is_0_event_hidden=$event"/>
     <toggle-component title="hide yaletown event" :def="is_yale_event_hidden" @toggle="is_yale_event_hidden=$event"/>
     <label for="day_range" style="margin-right: 10px;display: inline-block;width: 20px">{{ day_range }}</label>

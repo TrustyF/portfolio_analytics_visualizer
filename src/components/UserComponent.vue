@@ -12,6 +12,7 @@ let emits = defineEmits(["test"]);
 const curr_api = inject("curr_api");
 
 let events_collapsed = ref(true)
+let is_events_hidden = inject('is_events_hidden')
 
 async function delete_uid(uid) {
   const url = `${curr_api}/event/delete`
@@ -33,7 +34,7 @@ function formatTitle(event) {
 
   if (['youtube_pause', 'vimeo_pause'].includes(event['name'])) return parse_seconds(Math.round(event['info']))
 
-  if (event['name'] === 'return_arrow') return 'return arrow'
+  if (event['name'] === 'expanded' && event['source'] === 'houdini_icons') return event['info'].split('_')[1]
 
   return event['info']
 }
@@ -61,6 +62,7 @@ function event_to_icon(event) {
     'search_use': 'bi-search',
     'icon only': 'bi-gear-fill',
     'icon scale': 'bi-gear-fill',
+    'copied': 'bi-copy',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -94,6 +96,7 @@ function event_to_color(event) {
     'expanded': `hsla(100,${sat},${bright},${opacity})`,
     'icon only': `hsla(220,${sat},${bright},${opacity})`,
     'icon scale': `hsla(220,${sat},${bright},${opacity})`,
+    'copied': `hsla(40,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
@@ -154,31 +157,26 @@ function groupEvents(events) {
     <country-component :class="`${data['events'].length > 0 ? 'clickable':''}`" :data="data" @click="toggleCollapse"
                        v-click-out-side="clickOutside"/>
 
-    <div class="user_feed" v-if="data['events'].length > 0" v-show="!events_collapsed">
+    <div class="user_feed" v-if="data['events'].length > 0" v-show="!events_collapsed || !is_events_hidden">
 
-        <div v-for="(event,index) in data['events']" :key="event['timestamp']">
+      <div v-for="(event,index) in data['events']" :key="event['timestamp']">
 
-          <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
-            <p :class="`${event_to_icon(event)} event_icon`"
-               :style="`font-size: 0.8em;background-color:${event_to_color(event)};`"/>
+        <div class="event_wrapper" :style="`background-color:${event_to_color(event)};`">
 
-            <p class="event_title">{{ formatTitle(event) }}</p>
+          <p :class="`${event_to_icon(event)} event_icon`"
+             :style="`font-size: 0.8em;background-color:${event_to_color(event)};`"/>
 
-            <div :class="`time_sep ${event['diff']>60 && event['info']==='id: 998917047' ? 'completed':''}`"
-            >
-              <h4 class="time_title">{{ parse_seconds(Math.round(event['diff'])) }}</h4>
-              <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
-            </div>
-
-          </div>
-
-          <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
-            <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),10))"
-                 :key="'dot_time_'+index"/>
-          </div>
+          <p class="event_title">{{ formatTitle(event) }}</p>
 
         </div>
+
+        <div class="time_dots" v-show="event['diff'] > 5 && data['events'][index+1]">
+          <div class="t_dot" v-for="index in parseInt(Math.min(Math.max(3,(event['diff']/5)),10))"
+               :key="'dot_time_'+index"/>
+        </div>
+
       </div>
+    </div>
 
     <div class="bi-trash3-fill delete">
       <div class="click_padding" @click="delete_uid(data['uid'])"/>
@@ -221,6 +219,7 @@ function groupEvents(events) {
   position: relative;
   display: flex;
   flex-flow: column;
+  width: 100%;
   gap: 5px;
 
   /*width: 95%;*/
@@ -269,17 +268,16 @@ function groupEvents(events) {
 
 .event_wrapper {
   position: relative;
+  width: 100%;
   /*padding: 10px;*/
-  text-align: center;
-  border-radius: 15px;
-  /*display: flex;*/
-  /*flex-flow: row nowrap;*/
-  display: grid;
-  grid-template-columns: 1fr 4fr 1fr;
+  /*text-align: center;*/
+  border-radius: 10px;
+  display: flex;
+  flex-flow: row;
   align-items: center;
 
+  padding: 0;
   gap: 10px;
-  width: 100%;
   min-height: 30px;
   box-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
 }
@@ -296,11 +294,8 @@ function groupEvents(events) {
 
   margin-top: auto;
   margin-bottom: auto;
-
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: wrap;
+  word-break: break-all;
 
   gap: 10px;
 }
@@ -334,7 +329,8 @@ function groupEvents(events) {
   display: flex;
   flex-flow: column;
   justify-content: center;
-  border-radius: 15px;
+  border-radius: 10px;
+  padding: 10px;
   aspect-ratio: 1;
   color: white;
   height: 100%;
