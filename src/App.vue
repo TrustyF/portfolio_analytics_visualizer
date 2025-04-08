@@ -2,7 +2,6 @@
 import {computed, onMounted, provide, ref} from "vue";
 import axios from "axios"
 import ToggleComponent from "@/components/ToggleComponent.vue";
-import {parse_seconds} from "@/helpers.js";
 import UserComponent from "@/components/UserComponent.vue";
 
 // let dev = import.meta.env.DEV
@@ -13,10 +12,10 @@ provide('curr_api',curr_api)
 
 let event_loading = ref("unloaded")
 
-let is_0_event_hidden = ref(true)
-let is_events_hidden = ref(true)
+let is_0_event_hidden = ref(false)
+let is_events_hidden = ref(false)
 let is_no_events_user_hidden = ref(false)
-let is_yale_event_hidden = ref(true)
+let is_yale_event_hidden = ref(false)
 let day_range = ref(25)
 
 provide('is_events_hidden', is_events_hidden)
