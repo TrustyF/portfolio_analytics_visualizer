@@ -182,9 +182,6 @@ function groupEvents(events) {
       <div class="click_padding" @click="delete_uid(data['uid'])"/>
     </div>
 
-    <div class="bi-caret-down-fill" v-if="data['events'].length > 0 && events_collapsed"
-         style="position: absolute;bottom: 2px;left: calc(50% - 10px);font-size: 0.5em;color: #404040"></div>
-
   </div>
 </template>
 

@@ -16,7 +16,7 @@ let is_0_event_hidden = ref(false)
 let is_events_hidden = ref(false)
 let is_no_events_user_hidden = ref(false)
 let is_yale_event_hidden = ref(false)
-let day_range = ref(25)
+let day_range = ref(5)
 
 provide('is_events_hidden', is_events_hidden)
 provide('is_no_events_user_hidden', is_no_events_user_hidden)
