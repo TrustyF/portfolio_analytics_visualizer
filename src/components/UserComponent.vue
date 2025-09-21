@@ -4,6 +4,7 @@ import axios from "axios";
 import {parse_seconds} from "@/helpers.js";
 import CountryComponent from "@/components/CountryComponent.vue";
 import {clickOutSide as vClickOutSide} from '@mahdikhashan/vue3-click-outside'
+import AtlasIconComponent from "@/components/AtlasIconComponent.vue";
 
 let props = defineProps({
   data: Object, date: String
@@ -165,6 +166,8 @@ function groupEvents(events) {
 
           <p :class="`${event_to_icon(event)} event_icon`"
              :style="`font-size: 0.8em;background-color:${event_to_color(event)};`"/>
+
+          <atlas-icon-component :at_id="event.atlas_index"/>
 
           <p class="event_title">{{ formatTitle(event) }}</p>
 

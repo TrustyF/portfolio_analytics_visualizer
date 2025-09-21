@@ -3,12 +3,13 @@ import {computed, onMounted, provide, ref} from "vue";
 import axios from "axios"
 import ToggleComponent from "@/components/ToggleComponent.vue";
 import UserComponent from "@/components/UserComponent.vue";
+import icon_mapping from "@/assets/icons_mapping.json";
 
 // let dev = import.meta.env.DEV
 let dev = false
 let curr_api = dev ? 'http://127.0.0.1:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
 
-provide('curr_api',curr_api)
+provide('curr_api', curr_api)
 
 let event_loading = ref("unloaded")
 
@@ -33,6 +34,16 @@ async function fetch_events() {
 
   events.value = await axios.get(url, {params: params})
       .then(response => response.data)
+
+  events.value.forEach(obj => {
+    if (obj.source === "houdini_icons") {
+      obj.events.forEach((event, index) => {
+        if (event.source === "houdini_icons" && (event.name === 'expanded' || event.name === 'copied')) {
+          event.atlas_index = icon_mapping[event.info]
+        }
+      });
+    }
+  });
 
   event_loading.value = "loaded"
   console.log('loaded', events.value)
@@ -86,7 +97,8 @@ onMounted(() => {
 <template>
 
   <div class="settings_wrapper">
-    <toggle-component title="hide no event users" :def="is_no_events_user_hidden" @toggle="is_no_events_user_hidden=$event"/>
+    <toggle-component title="hide no event users" :def="is_no_events_user_hidden"
+                      @toggle="is_no_events_user_hidden=$event"/>
     <toggle-component title="hide all events" :def="is_events_hidden" @toggle="is_events_hidden=$event"/>
     <toggle-component title="hide 0 event" :def="is_0_event_hidden" @toggle="is_0_event_hidden=$event"/>
     <toggle-component title="hide yaletown event" :def="is_yale_event_hidden" @toggle="is_yale_event_hidden=$event"/>
