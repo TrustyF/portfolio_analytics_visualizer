@@ -6,7 +6,7 @@ let props = defineProps(['at_id']);
 let emits = defineEmits(["test"]);
 
 
-let icon_scale = computed(() => 0.25)
+let icon_scale = computed(() => 0.3)
 let icon_size = computed(() => `${120 * icon_scale.value}px`)
 let image_size = computed(() => `${100 * icon_scale.value}px`)
 
