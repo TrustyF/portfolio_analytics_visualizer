@@ -64,6 +64,7 @@ function event_to_icon(event) {
     'icon only': 'bi-gear-fill',
     'icon scale': 'bi-gear-fill',
     'copied': 'bi-copy',
+    'downloaded_svg': 'bi-download',
   }
 
   if (event['info'].split(' ').includes('outside,')) return 'bi-house-door'
@@ -98,6 +99,7 @@ function event_to_color(event) {
     'icon only': `hsla(220,${sat},${bright},${opacity})`,
     'icon scale': `hsla(220,${sat},${bright},${opacity})`,
     'copied': `hsla(40,${sat},${bright},${opacity})`,
+    'downloaded_svg': `hsla(0,${sat},${bright},${opacity})`,
   }
 
   return convert_table[event_name]
