@@ -33,3 +33,4 @@ coverage
 /data_parser/venv/
 /.vscode/
 /package-lock.json
+/public/atlas/

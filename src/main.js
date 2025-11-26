@@ -6,6 +6,7 @@ import axios from "axios";
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from "./router";
 
 axiosRetry(axios, {
     retryDelay: ((count) => count * 1000),
@@ -13,4 +14,4 @@ axiosRetry(axios, {
     onRetry: ((retryCount, error) => console.log('retry', retryCount, error.message, error.code)),
     retryCondition: ((error) => true)
 });
-createApp(App).mount('#app')
+createApp(App).use(router).mount('#app')

@@ -68,16 +68,10 @@ function firstTimestampFormat(time,geo) {
       </h3>
 
       <h4 class="underline">
-        {{ `${firstTimestampFormat(data['first_touch'],data['geo'])} - ${data['geo']['zipcode']}` }}
+        {{ `${firstTimestampFormat(data['created_at'],data['geo'])} - ${data['geo']['zipcode']}` }}
       </h4>
 
-      <div class="user_total_time">
-        <h4 class="underline">{{ parse_seconds(Math.round(data['total_time'])) }}</h4>
-        <div class="bi-clock-history" style="font-size: 0.7em;line-height: 0.7em"></div>
-      </div>
-
       <img :src="`${source_icon(data['source'])}`" class="source" style="font-size: 1em" alt="source">
-
     </div>
   </div>
 </template>
