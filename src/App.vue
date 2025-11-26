@@ -1,9 +1,10 @@
 <script setup>
-import {RouterLink, RouterView} from 'vue-router'
+import {RouterLink, RouterView, useRoute, useRouter} from 'vue-router'
+const route = useRoute()
 </script>
 
 <template>
-<router-view/>
+<router-view :key="route.fullPath" />
 </template>
 
 <style scoped>
