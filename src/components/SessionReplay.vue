@@ -1,6 +1,8 @@
 <script setup>
 
 import {onMounted, ref} from "vue";
+
+import {Replayer} from "@rrweb/replay";
 import RRWebPlayer from "rrweb-player";
 import "/src/assets/rrweb_style.css";
 import {useRouter} from "vue-router";
@@ -15,12 +17,47 @@ function nav(dir) {
   router.push(`/replay/${+props.sessionId + +dir}`)
 }
 
-function home(){
+function home() {
   router.push('/')
 }
 
-function del(){
+function del() {
 
+}
+
+function reduceTimestampGaps(data, maxGap = 1000) {
+  // Parse the data if it's a string
+  const events = typeof data === 'string'
+    ? data.split('\n').filter(line => line.trim()).map(line => JSON.parse(line))
+    : data;
+
+  if (events.length === 0) return events;
+
+  // Sort events by timestamp
+  events.sort((a, b) => a.timestamp - b.timestamp);
+
+  const result = [];
+  let timeOffset = 0;
+  let lastOriginalTime = events[0].timestamp;
+
+  for (let i = 0; i < events.length; i++) {
+    const event = { ...events[i] };
+    const currentTime = event.timestamp;
+    const gap = currentTime - lastOriginalTime;
+
+    // If gap exceeds maxGap, compress it
+    if (gap > maxGap) {
+      timeOffset += gap - maxGap;
+    }
+
+    // Apply the accumulated offset
+    event.timestamp = currentTime - timeOffset;
+    result.push(event);
+
+    lastOriginalTime = currentTime;
+  }
+
+  return result;
 }
 
 onMounted(async () => {
@@ -29,17 +66,25 @@ onMounted(async () => {
   const res = await fetch(`https://analytics-trustyfox.pythonanywhere.com/event/session/${props.sessionId}`);
   const events = await res.json();
 
-  // console.log(events)
+  const parsed = events.map((e) => JSON.parse(e))
+  const compressed = reduceTimestampGaps(parsed,1000)
 
   // initialize rrweb player
   const rep = new RRWebPlayer({
     target: playerContainer.value,
     props: {
-      events: events,
-      width: 950,
+      events: compressed,
+      skipInactive:false,
       inactiveColor: '#d30000',
     }
   })
+  // console.log(events)
+  // const rep = new Replayer(parsed, {
+  //   root: playerContainer.value,
+  //   skipInactive: true,
+  //   width:950,
+  //   height:1000,
+  // })
   rep.play()
 
 })
@@ -69,6 +114,7 @@ onMounted(async () => {
 .rrweb-player-container {
   /*position: absolute;*/
   z-index: 999;
+  /*transform: translate(-50%,-50%);*/
 }
 
 .arrow {
