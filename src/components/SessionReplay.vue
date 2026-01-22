@@ -1,5 +1,5 @@
 <script setup>
-import {inject, onMounted, ref} from "vue";
+import {inject, onMounted, onUnmounted, ref} from "vue";
 import RRWebPlayer from "rrweb-player";
 import "/src/assets/rrweb_style.css";
 import {useRouter} from "vue-router";
@@ -95,6 +95,14 @@ async function get_session_info() {
 onMounted(() => {
   init_rrewb_player()
   get_session_info()
+})
+
+onUnmounted(()=>{
+    if (playerContainer.value) {
+    const container = playerContainer.value.el || document.getElementsByClassName('rrweb-player-container')[0]
+    if (container) container.innerHTML = ''
+    playerContainer.value = null
+  }
 })
 
 </script>

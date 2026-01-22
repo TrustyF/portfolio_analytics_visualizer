@@ -5,7 +5,6 @@ import SessionComponent from "@/components/SessionComponent.vue";
 
 let curr_api = inject('curr_api')
 let all_sessions = ref([])
-// let filtered_sessions = computed(() => groupDates(sessions.value))
 
 async function fetch_sessions() {
 
@@ -13,7 +12,7 @@ async function fetch_sessions() {
   await axios.get(url)
       .then(response => {
         all_sessions.value = response.data
-        console.log(response.data)
+        all_sessions.value.reverse()
       })
 }
 
@@ -33,14 +32,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="wrapper" v-if="all_sessions">
+  <div class="wrapper" v-if="all_sessions.length > 0">
 
 <!--    <div :class="`date_wrapper `" v-for="(session,date) in filtered_sessions" :key="date">-->
 
 <!--      <h4 v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>-->
 
       <div class="post_date_wrapper">
-        <session-component v-for="session in all_sessions.reverse()"
+        <session-component v-for="session in all_sessions"
                         :data="session"
                         :key="session['sid']"/>
       </div>
