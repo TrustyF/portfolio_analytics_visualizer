@@ -36,25 +36,21 @@ function getFlagEmoji(countryCode) {
   return String.fromCodePoint(...codePoints);
 }
 
-function firstTimestampFormat(time,geo) {
-  const date = new Date(time)
-
+function firstTimestampFormat(time, geo) {
+  const date = new Date(time);
   const now = new Date();
-  const timeDifferenceInHours = Math.floor((now - date) / (1000 * 60 * 60));
 
-  if (timeDifferenceInHours < 24) {
-    return `${timeDifferenceInHours} hours ago`;
+  const diffMs = now - date;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffHours < 24) {
+    return `${diffHours} hours ago`;
   }
 
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const amPm = hours >= 12 ? 'PM' : 'AM';
-
-  // Convert to 12-hour format
-  hours = hours % 12 || 12;
-
-  return `${hours}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+  const diffDays = Math.floor(diffHours / 24);
+  return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`;
 }
+
 
 
 </script>

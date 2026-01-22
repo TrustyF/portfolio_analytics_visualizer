@@ -15,7 +15,7 @@ function open_session(id) {
 </script>
 
 <template>
-  <div class="session_wrapper" @click="open_session(data['id'])">
+  <div class="session_wrapper" :class="{viewed:data['viewed']}" @click="open_session(data['id'])">
     <country-component :data="data"/>
   </div>
 </template>
@@ -24,5 +24,8 @@ function open_session(id) {
 .session_wrapper {
   cursor: pointer;
   width: 200px;
+}
+.viewed {
+  opacity: 50%;
 }
 </style>

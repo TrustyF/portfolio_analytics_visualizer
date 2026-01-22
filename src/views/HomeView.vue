@@ -1,20 +1,15 @@
 <script setup>
-import {computed, onMounted, provide, ref} from "vue";
+import {computed, inject, onMounted, provide, ref} from "vue";
 import axios from "axios"
 import SessionComponent from "@/components/SessionComponent.vue";
 
-// let dev = import.meta.env.DEV
-let dev = false
-let curr_api = dev ? 'http://127.0.0.1:5000' : 'https://analytics-trustyFox.pythonanywhere.com'
-
-provide('curr_api', curr_api)
-
+let curr_api = inject('curr_api')
 let all_sessions = ref([])
 // let filtered_sessions = computed(() => groupDates(sessions.value))
 
 async function fetch_sessions() {
 
-  const url = `${curr_api}/event/get_sessions`
+  const url = `${curr_api}/session/get_sessions`
   await axios.get(url)
       .then(response => {
         all_sessions.value = response.data
@@ -45,7 +40,7 @@ onMounted(() => {
 <!--      <h4 v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>-->
 
       <div class="post_date_wrapper">
-        <session-component v-for="session in all_sessions"
+        <session-component v-for="session in all_sessions.reverse()"
                         :data="session"
                         :key="session['sid']"/>
       </div>
