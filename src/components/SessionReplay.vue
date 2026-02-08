@@ -11,7 +11,10 @@ let curr_api = inject('curr_api')
 let router = useRouter()
 
 const playerContainer = ref(null);
-const session_info = ref({})
+const session_info = ref(null)
+const PlayerContainerObserver = new ResizeObserver(entries => {
+  for (let entry of entries) scaleToFitParent(entry.target)
+})
 
 function nav(new_id) {
   router.push(`/replay/${new_id}`)
@@ -83,8 +86,7 @@ async function init_rrewb_player() {
     }
   })
 
-  rep.play()
-  rep.setSpeed(4)
+  rep.setSpeed(8)
 }
 
 async function get_session_info() {
@@ -92,13 +94,37 @@ async function get_session_info() {
   session_info.value = await res.json()
 }
 
+function scaleToFitParent(container) {
+  const parent = container.parentElement;
+
+  // Get dimensions
+  const parentWidth = parent.clientWidth;
+  const parentHeight = parent.clientHeight;
+  const containerWidth = container.scrollWidth;
+  const containerHeight = container.scrollHeight;
+
+  // Calculate scale ratios
+  const scaleX = parentWidth / containerWidth;
+  const scaleY = parentHeight / containerHeight;
+
+  // Use the smaller scale to fit both dimensions
+  const scale = Math.min(scaleX, scaleY);
+
+  // Apply transform
+  container.style.transform = `scale(${scale})`;
+  container.style.transformOrigin = 'top left'; // Adjust as needed
+}
+
 onMounted(() => {
   init_rrewb_player()
   get_session_info()
+  PlayerContainerObserver.observe(playerContainer.value)
+  window.addEventListener('resize', () => scaleToFitParent(playerContainer.value))
 })
 
-onUnmounted(()=>{
-    if (playerContainer.value) {
+onUnmounted(() => {
+  PlayerContainerObserver.disconnect()
+  if (playerContainer.value) {
     const container = playerContainer.value.el || document.getElementsByClassName('rrweb-player-container')[0]
     if (container) container.innerHTML = ''
     playerContainer.value = null
@@ -110,22 +136,31 @@ onUnmounted(()=>{
 <template>
   <div class="wrapper">
 
-    <div class="rrweb-player-container" ref="playerContainer"></div>
+    <div class="nav">
+      <div class="bi-arrow-left arrow" style="top: 250px"
+           v-show="!session_info || session_info['prev_session']"
+           @click="nav(session_info['prev_session'])">
+<!--        <h1 class="arrow_text">{{ session_info?.['prev_session'] }}</h1>-->
+      </div>
+      <div class="bi-arrow-right arrow" style="left: auto;right: 0;top: 250px"
+           v-show="!session_info || session_info['next_session']"
+           @click="nav(session_info['next_session'])">
+<!--        <h1 class="arrow_text">{{ session_info?.['next_session'] }}</h1>-->
+      </div>
+      <div class="bi-house-fill arrow" style="top: 100px"
+           @click="home()"></div>
+      <div class="bi-trash arrow" style="top: 400px"
+           @click="del()"></div>
 
-    <div class="bi-arrow-left arrow" style="top: 250px"
-         v-show="session_info['prev_session']"
-         @click="nav(session_info['prev_session'])"></div>
-    <div class="bi-arrow-right arrow" style="left: auto;right: 0;top: 250px"
-         v-show="session_info['next_session']"
-         @click="nav(session_info['next_session'])"></div>
-    <div class="bi-house-fill arrow" style="top: 100px"
-         @click="home()"></div>
-    <div class="bi-trash arrow" style="top: 400px"
-         @click="del()"></div>
-
-    <div class="country_comp">
-      <country-component :data="session_info" v-if="session_info?.id"/>
+      <div class="country_comp">
+        <country-component :data="session_info" v-if="session_info?.id"/>
+      </div>
     </div>
+
+    <div class="player_wrapper">
+      <div class="rrweb-player-container" ref="playerContainer"/>
+    </div>
+
   </div>
 
 </template>
@@ -134,32 +169,51 @@ onUnmounted(()=>{
 .wrapper {
   /*outline: 1px solid red;*/
   width: 100%;
+  height: 90vh;
   position: relative;
   display: flex;
   flex-flow: column;
-  align-items: center;
-  justify-content: center;
+}
+
+.player_wrapper {
+  /*outline: 1px solid blue;*/
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .rrweb-player-container {
-  /*position: absolute;*/
-  /*z-index: 999;*/
-  /*transform: translate(-50%,-50%);*/
+  position: absolute;
+  left: 0;
+  top: 0;
+  /*outline: 3px solid green;*/
+  /*height: 100%;*/
+  /*width: 100%;*/
+}
+
+.nav {
+  display: flex;
+  flex-flow: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
 }
 
 .arrow {
   padding: 10px 15px 10px 15px;
   cursor: pointer;
-  position: absolute;
+  /*position: absolute;*/
   left: 0;
   font-size: 2em;
+  text-align: center;
+}
+
+.arrow_text {
+  font-size: 0.5em;
 }
 
 .country_comp {
   width: 200px;
-  position: absolute;
-  left: 0;
-  top: 700px;
-  /*transform: translateY(200%);*/
 }
 </style>
