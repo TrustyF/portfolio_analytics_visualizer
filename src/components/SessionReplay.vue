@@ -4,6 +4,7 @@ import RRWebPlayer from "rrweb-player";
 import "/src/assets/rrweb_style.css";
 import {useRouter} from "vue-router";
 import CountryComponent from "@/components/CountryComponent.vue";
+import {unpack} from "@rrweb/packer/unpack";
 
 let props = defineProps({sessionId: Number});
 
@@ -32,12 +33,7 @@ function set_viewed() {
   const res = fetch(`${curr_api}/session/set_viewed/${props.sessionId}`);
 }
 
-function reduceTimestampGaps(data, maxGap = 1000) {
-  // Parse the data if it's a string
-  const events = typeof data === 'string'
-      ? data.split('\n').filter(line => line.trim()).map(line => JSON.parse(line))
-      : data;
-
+function reduceTimestampGaps(events, maxGap = 1000) {
   if (events.length === 0) return events;
 
   // Sort events by timestamp
@@ -72,7 +68,7 @@ async function init_rrewb_player() {
   const res = await fetch(`${curr_api}/session/get/${props.sessionId}`);
   const events = await res.json();
 
-  const parsed = events.map((e) => JSON.parse(e))
+  const parsed = events.map((e) => unpack(e))
   const compressed = reduceTimestampGaps(parsed, 1000)
   set_viewed()
 
