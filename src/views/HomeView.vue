@@ -5,6 +5,23 @@ import SessionComponent from "@/components/SessionComponent.vue";
 
 let curr_api = inject('curr_api')
 let all_sessions = ref([])
+const minLength = ref(Number(localStorage.getItem('minSessionLength') ?? 10))
+const minClicks = ref(Number(localStorage.getItem('minSessionClicks') ?? 5))
+
+const visible_sessions = computed(() =>
+    all_sessions.value.filter((session) =>
+        (session['duration'] ?? 0) >= minLength.value
+        && (session['click_count'] ?? 0) >= minClicks.value
+    )
+)
+
+function onMinLengthChange() {
+  localStorage.setItem('minSessionLength', minLength.value)
+}
+
+function onMinClicksChange() {
+  localStorage.setItem('minSessionClicks', minClicks.value)
+}
 
 async function fetch_sessions() {
 
@@ -39,12 +56,27 @@ onMounted(() => {
 <!--      <h4 v-show="formatDate(date) > 0">{{ formatDate(date) + " days ago" }}</h4>-->
 
       <div class="post_date_wrapper">
-        <session-component v-for="session in all_sessions"
+        <session-component v-for="session in visible_sessions"
                         :data="session"
                         :key="session['sid']"/>
       </div>
 
 <!--    </div>-->
+
+    <div class="settings_wrapper">
+      <div class="length_filter" :title="`Hide sessions shorter than ${minLength}s`">
+        <span>{{ minLength }}s</span>
+        <input type="range" min="0" max="120" step="1"
+               v-model.number="minLength"
+               @input="onMinLengthChange()"/>
+      </div>
+      <div class="length_filter" :title="`Hide sessions with fewer than ${minClicks} clicks`">
+        <span>{{ minClicks }} clicks</span>
+        <input type="range" min="0" max="50" step="1"
+               v-model.number="minClicks"
+               @input="onMinClicksChange()"/>
+      </div>
+    </div>
 
   </div>
 
@@ -56,6 +88,17 @@ onMounted(() => {
   z-index: 10;
   right: 10px;
   bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.length_filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9em;
+  opacity: 0.8;
 }
 
 .wrapper {

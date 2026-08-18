@@ -13,6 +13,14 @@ let router = useRouter()
 
 const playerContainer = ref(null);
 const session_info = ref(null)
+const reduceGapsEnabled = ref(localStorage.getItem('reduceTimestampGaps') !== 'false')
+const notEnoughEvents = ref(false)
+
+function toggleReduceGaps() {
+  reduceGapsEnabled.value = !reduceGapsEnabled.value
+  localStorage.setItem('reduceTimestampGaps', reduceGapsEnabled.value)
+  if (parsedEvents) renderPlayer()
+}
 const PlayerContainerObserver = new ResizeObserver(entries => {
   for (let entry of entries) scaleToFitParent(entry.target)
 })
@@ -23,10 +31,6 @@ function nav(new_id) {
 
 function home() {
   router.push('/')
-}
-
-function del() {
-
 }
 
 function set_viewed() {
@@ -63,14 +67,18 @@ function reduceTimestampGaps(events, maxGap = 1000) {
   return result;
 }
 
-async function init_rrewb_player() {
-  // fetch events from backend
-  const res = await fetch(`${curr_api}/session/get/${props.sessionId}`);
-  const events = await res.json();
+let parsedEvents = null;
 
-  const parsed = events.map((e) => unpack(e))
-  const compressed = reduceTimestampGaps(parsed, 1000)
-  set_viewed()
+function renderPlayer() {
+  playerContainer.value.innerHTML = ''
+
+  if (parsedEvents.length < 2) {
+    notEnoughEvents.value = true
+    return
+  }
+  notEnoughEvents.value = false
+
+  const compressed = reduceGapsEnabled.value ? reduceTimestampGaps(parsedEvents, 1000) : parsedEvents
 
   // initialize rrweb player
   const rep = new RRWebPlayer({
@@ -83,6 +91,17 @@ async function init_rrewb_player() {
   })
 
   rep.setSpeed(8)
+}
+
+async function init_rrewb_player() {
+  // fetch events from backend
+  const res = await fetch(`${curr_api}/session/get/${props.sessionId}`);
+  const events = await res.json();
+
+  parsedEvents = events.map((e) => unpack(e))
+  set_viewed()
+
+  renderPlayer()
 }
 
 async function get_session_info() {
@@ -145,8 +164,10 @@ onUnmounted(() => {
       </div>
       <div class="bi-house-fill arrow" style="top: 100px"
            @click="home()"></div>
-      <div class="bi-trash arrow" style="top: 400px"
-           @click="del()"></div>
+
+      <div :class="`arrow ${reduceGapsEnabled ? 'bi-hourglass-split' : 'bi-hourglass'}`" style="top: 400px"
+           :title="`Reduce timestamp gaps: ${reduceGapsEnabled ? 'on' : 'off'}`"
+           @click="toggleReduceGaps()"></div>
 
       <div class="country_comp">
         <country-component :data="session_info" v-if="session_info?.id"/>
@@ -155,6 +176,9 @@ onUnmounted(() => {
 
     <div class="player_wrapper">
       <div class="rrweb-player-container" ref="playerContainer"/>
+      <div class="not_enough_events" v-if="notEnoughEvents">
+        <p>Not enough activity to replay this session.</p>
+      </div>
     </div>
 
   </div>
@@ -185,6 +209,18 @@ onUnmounted(() => {
   /*outline: 3px solid green;*/
   /*height: 100%;*/
   /*width: 100%;*/
+}
+
+.not_enough_events {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
 }
 
 .nav {
