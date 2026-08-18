@@ -4,7 +4,6 @@ import RRWebPlayer from "rrweb-player";
 import "/src/assets/rrweb_style.css";
 import {useRouter} from "vue-router";
 import CountryComponent from "@/components/CountryComponent.vue";
-import {unpack} from "@rrweb/packer/unpack";
 
 let props = defineProps({sessionId: Number});
 
@@ -98,7 +97,7 @@ async function init_rrewb_player() {
   const res = await fetch(`${curr_api}/session/get/${props.sessionId}`);
   const events = await res.json();
 
-  parsedEvents = events.map((e) => unpack(e))
+  parsedEvents = events
   set_viewed()
 
   renderPlayer()

@@ -28,6 +28,7 @@ async function fetch_sessions() {
   const url = `${curr_api}/session/get_sessions`
   await axios.get(url)
       .then(response => {
+        if (import.meta.env.DEV) console.log('get_sessions response:', response.data)
         all_sessions.value = response.data
         all_sessions.value.reverse()
       })
@@ -78,6 +79,10 @@ onMounted(() => {
       </div>
     </div>
 
+  </div>
+
+  <div class="empty_state" v-else>
+    <p>No sessions recorded yet.</p>
   </div>
 
 </template>
@@ -133,6 +138,15 @@ onMounted(() => {
 
 .event_wrapper p {
   line-height: normal;
+}
+
+.empty_state {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  margin-top: 50px;
 }
 
 </style>
